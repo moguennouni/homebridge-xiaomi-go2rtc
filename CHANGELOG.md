@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- go2rtc-xiaomi-control binaries are built with an empty Go build ID, so rebuilding them on any system (Linux,
+  macOS, Windows) with the same Go version gives the same SHA-256 digests as the release. In 0.4.0, only the build
+  ID differed between systems; the compiled code was already identical.
+
 ## 0.4.0
 
 First public release.

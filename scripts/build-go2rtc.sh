@@ -44,7 +44,7 @@ for target in $TARGETS; do
   [ "$arch" = "arm" ] && [ "$arm" = "6" ] && name="${name}v6"
   [ "$os" = "windows" ] && name="${name}.exe"
   echo "Building $name..."
-  CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" GOARM="$arm" go build -ldflags "-s -w" -trimpath -o "$OUT/$name" .
+  CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" GOARM="$arm" go build -ldflags "-s -w -buildid=" -trimpath -o "$OUT/$name" .
   echo "$key $name" >> "$OUT/targets.txt"
 done
 
