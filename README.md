@@ -96,11 +96,25 @@ Xiaomi camera ──(local network, encrypted P2P)──► go2rtc ──(RTSP, 
 ps -eo user,args | grep [h]omebridge
 ```
 
-| What you see | Command |
-|---|---|
-| User `homebridge`, paths under `/opt/homebridge` or `/var/lib/homebridge` (official image, apt package) | `sudo -u homebridge /opt/homebridge/bin/npm install --prefix /var/lib/homebridge homebridge-xiaomi-go2rtc` |
-| `homebridge` started from `/usr/lib/node_modules` or `/usr/local/lib/node_modules` (global npm install) | `sudo npm install -g homebridge-xiaomi-go2rtc` |
-| Docker (`homebridge/homebridge` image) | In Homebridge UI → menu (⋮) → **Terminal**: `npm install homebridge-xiaomi-go2rtc` |
+Then use the command matching what you see.
+
+**Official image or apt package**: user `homebridge`, paths under `/opt/homebridge` or `/var/lib/homebridge`.
+
+```bash
+sudo -u homebridge /opt/homebridge/bin/npm install --prefix /var/lib/homebridge homebridge-xiaomi-go2rtc
+```
+
+**Global npm install**: `homebridge` started from `/usr/lib/node_modules` or `/usr/local/lib/node_modules`.
+
+```bash
+sudo npm install -g homebridge-xiaomi-go2rtc
+```
+
+**Docker** (`homebridge/homebridge` image): in Homebridge UI → menu (⋮) → **Terminal**, run:
+
+```bash
+npm install homebridge-xiaomi-go2rtc
+```
 
 The package of each version is also attached to the
 [GitHub releases](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/releases): replace
