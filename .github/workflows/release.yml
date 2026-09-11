@@ -1,0 +1,94 @@
+# Runs when a version tag (v1.2.3) is pushed:
+# 1. builds go2rtc-xiaomi-control from the official go2rtc sources + the patch, for every platform,
+# 2. records the provenance of the binaries (GitHub build attestation),
+# 3. writes their SHA-256 digests into the plugin (lib/go2rtc-binaries.json),
+# 4. creates the GitHub release with the binaries and the plugin package,
+# 5. publishes the plugin on npm, only when the repository variable NPM_PUBLISH is "true".
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: The tag matches package.json
+        run: |
+          EXPECTED="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$EXPECTED" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json ($EXPECTED)"
+            exit 1
+          fi
+
+      - name: Build go2rtc-xiaomi-control
+        run: bash scripts/build-go2rtc.sh
+
+      # Build attestations are only available for public repositories on free plans
+      - name: Attest the provenance of the binaries
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: go2rtc-xiaomi-control/dist/go2rtc-xiaomi-control_*
+
+      - name: Put the binary digests into the plugin
+        run: cp go2rtc-xiaomi-control/dist/go2rtc-binaries.json lib/go2rtc-binaries.json
+
+      - name: Pack the plugin
+        run: npm pack
+
+      - name: Release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          {
+            awk -v v="## $VERSION" '$0 == v {found=1; next} found && /^## / {exit} found' CHANGELOG.md
+            echo
+            echo "### go2rtc-xiaomi-control"
+            echo
+            echo "Unofficial build of go2rtc (MIT, Copyright (c) 2022 Alexey Khit), made by this workflow from the"
+            echo "official go2rtc sources and \`go2rtc-xiaomi-control.patch\`. Not supported by the go2rtc project."
+            echo "The plugin downloads the binary of your platform and checks its SHA-256 digest:"
+            echo
+            echo '```'
+            cat go2rtc-xiaomi-control/dist/SHA256SUMS
+            echo '```'
+          } > "$RUNNER_TEMP/notes.md"
+          cat "$RUNNER_TEMP/notes.md"
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
+            go2rtc-xiaomi-control/dist/go2rtc-xiaomi-control_* \
+            go2rtc-xiaomi-control/dist/SHA256SUMS \
+            go2rtc-xiaomi-control/dist/LICENSE.go2rtc \
+            go2rtc-xiaomi-control/dist/go2rtc-xiaomi-control.patch \
+            homebridge-xiaomi-go2rtc-*.tgz
+
+      # Trusted publishing: no npm token is stored, npm checks that the package comes from this workflow and adds
+      # the provenance itself. Needs npm 11.5.1+, a public repository, and a package that already exists on npm
+      # (the first version is published by hand, see docs/RELEASING.md).
+      - name: Publish on npm
+        if: vars.NPM_PUBLISH == 'true' && !github.event.repository.private
+        run: |
+          npm install -g npm@latest
+          npm publish --access public

@@ -1,0 +1,6 @@
+node_modules/
+*.tgz
+npm-debug.log*
+
+# Built go2rtc binaries are published as GitHub release assets, not committed
+go2rtc-xiaomi-control/dist/

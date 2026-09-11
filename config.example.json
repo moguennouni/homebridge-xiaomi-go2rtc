@@ -1,0 +1,20 @@
+{
+  "platform": "XiaomiGo2rtc",
+  "name": "Xiaomi Cameras",
+  "uiUsername": "admin",
+  "uiPassword": "change-me",
+  "region": "sg",
+  "cameras": [
+    {
+      "did": "123456789",
+      "ip": "192.168.1.50",
+      "model": "chuangmi.camera.026c02",
+      "name": "Living room",
+      "subtype": "sd",
+      "audio": true,
+      "settings": true,
+      "ptz": true,
+      "ptzPanSteps": 3
+    }
+  ]
+}

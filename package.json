@@ -1,0 +1,47 @@
+{
+  "name": "homebridge-xiaomi-go2rtc",
+  "displayName": "Xiaomi Cameras (go2rtc)",
+  "version": "0.4.0",
+  "description": "Xiaomi Mi Home cameras in Apple Home (HomeKit) through Homebridge and go2rtc: live video, snapshots, audio, optional pan/tilt and camera settings.",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Amine GUENNOUNI",
+  "homepage": "https://github.com/moguennouni/homebridge-xiaomi-go2rtc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moguennouni/homebridge-xiaomi-go2rtc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moguennouni/homebridge-xiaomi-go2rtc/issues"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "xiaomi",
+    "mi home",
+    "mijia",
+    "camera",
+    "go2rtc"
+  ],
+  "engines": {
+    "node": ">=22",
+    "homebridge": "^1.8.0 || ^2.0.0"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "config.schema.json",
+    "config.example.json",
+    "README.md",
+    "README.fr.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "dependencies": {
+    "ffmpeg-for-homebridge": "^2.2.2",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "hap-nodejs": "^0.14.3"
+  }
+}
