@@ -1,5 +1,10 @@
 # homebridge-xiaomi-go2rtc
 
+[![npm](https://img.shields.io/npm/v/homebridge-xiaomi-go2rtc)](https://www.npmjs.com/package/homebridge-xiaomi-go2rtc)
+[![npm downloads](https://img.shields.io/npm/dt/homebridge-xiaomi-go2rtc)](https://www.npmjs.com/package/homebridge-xiaomi-go2rtc)
+[![CI](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/actions/workflows/ci.yml/badge.svg)](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 [English version](README.md)
 
 Plugin Homebridge qui amène les **caméras Xiaomi Mi Home dans l'app Maison d'Apple (HomeKit)** : vidéo en direct,
@@ -136,6 +141,10 @@ go2rtc-xiaomi-control démarré. Interface web : http://192.168.1.10:1984
 Aucun compte Xiaomi connecté. Ouvrez http://192.168.1.10:1984, cliquez sur "Add" puis "Xiaomi"...
 ```
 
+Les logs et les noms des interrupteurs suivent la langue du système (français ou anglais) : pour forcer le français,
+réglez l'option `language` sur `fr` (« Language » → « Français »). L'écran de configuration de Homebridge UI, lui,
+est en anglais.
+
 ## Connecter le compte Xiaomi
 
 Cela se fait une seule fois, dans l'interface go2rtc, et pas dans la configuration du plugin : votre mot de passe
@@ -196,7 +205,7 @@ script la trouve pour vous.
 
 ### Déclarer la caméra
 
-Dans les paramètres du plugin → **Réglages par caméra** → ajoutez une caméra, ou dans `config.json` :
+Dans les paramètres du plugin → **Camera settings** → ajoutez une caméra, ou dans `config.json` :
 
 ```json
 "cameras": [
@@ -261,7 +270,8 @@ fréquence et corrige le problème. Seulement si vous utilisez le go2rtc officie
 
 ## Orientation et réglages de la caméra
 
-- **Orientation** (`"ptz": true`) : quatre interrupteurs, Gauche / Droite / Haut / Bas. Ils ne fonctionnent **que
+- **Orientation** (`"ptz": true`) : quatre interrupteurs, Gauche / Droite / Haut / Bas (Left / Right / Up / Down
+  en anglais). Ils ne fonctionnent **que
   pendant que la vidéo est ouverte**, car la commande passe par la connexion vidéo.
 - **Réglages** (`"settings": true`) : Veille, Voyant, Suivi des mouvements, Détection de mouvement, Vision nocturne
   (automatique ou désactivée), selon ce que le modèle propose. Le plugin les trouve dans la spécification MIoT
@@ -315,6 +325,7 @@ orientation, réglages ni correction du son), et `go2rtcPath` lance un binaire g
 |---|---|---|
 | `platform` | | Doit valoir `XiaomiGo2rtc` |
 | `name` | `Xiaomi Cameras` | Nom de la plateforme dans les logs |
+| `language` | `auto` | Langue des logs et des noms des interrupteurs : `auto` (langue du système), `en`, `fr` |
 | `uiUsername`, `uiPassword` | aucun | Identifiants de l'interface go2rtc depuis le réseau local. **Fortement conseillé.** |
 | `region` | automatique | Serveur Xiaomi du compte (`de`, `sg`, `us`, `ru`, `i2`, `cn`). Accélère la détection ; c'est aussi la région par défaut des caméras déclarées |
 | `apiPort` | `1984` | Port de l'interface et de l'API go2rtc |

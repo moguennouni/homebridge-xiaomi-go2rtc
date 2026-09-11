@@ -1,0 +1,74 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! Please check the [Troubleshooting](https://github.com/moguennouni/homebridge-xiaomi-go2rtc#troubleshooting) section first.
+        **Never paste your Xiaomi password, the go2rtc.yaml file or its token.** Hide IP addresses and dids if you prefer.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: camera
+    attributes:
+      label: Camera
+      description: Product name or reference (e.g. MJSXJ10CM) and Xiaomi model if known (e.g. chuangmi.camera.026c02).
+    validations:
+      required: true
+  - type: dropdown
+    id: discovery
+    attributes:
+      label: How the camera is added
+      options:
+        - Discovered automatically
+        - Declared manually (did + IP)
+        - Not added yet
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Plugin, Homebridge and Node.js versions (`node -v`).
+      placeholder: plugin 0.5.0, Homebridge 1.8.4, Node.js 22.19.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Server
+      description: Hardware, operating system and architecture (`uname -m`), Docker or not.
+      placeholder: Raspberry Pi 4, Raspberry Pi OS 64-bit, aarch64, official Homebridge image
+    validations:
+      required: true
+  - type: dropdown
+    id: go2rtc
+    attributes:
+      label: go2rtc used
+      description: Shown in the log at startup.
+      options:
+        - go2rtc-xiaomi-control (default)
+        - Official go2rtc (useOfficialGo2rtc)
+        - Custom go2rtc (go2rtcPath)
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Plugin configuration
+      description: The XiaomiGo2rtc platform block of config.json, **without uiPassword**.
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Homebridge log in debug mode (-D) from the start of the plugin to the problem. The [go2rtc] and [ffmpeg] lines are the most useful.
+      render: text
+    validations:
+      required: true

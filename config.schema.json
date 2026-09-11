@@ -2,190 +2,200 @@
   "pluginAlias": "XiaomiGo2rtc",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Caméras Xiaomi Mi Home via go2rtc. Après le démarrage, ouvrez l'interface go2rtc (http://IP-DU-SERVEUR:1984), cliquez sur Add → Xiaomi et connectez votre compte : les caméras apparaissent automatiquement.",
+  "headerDisplay": "Xiaomi Mi Home cameras through go2rtc. After the first start, open the go2rtc web UI (http://SERVER-IP:1984), click Add → Xiaomi and sign in to your Xiaomi account: cameras show up automatically. Full guide: https://github.com/moguennouni/homebridge-xiaomi-go2rtc",
   "schema": {
     "type": "object",
     "properties": {
       "name": {
-        "title": "Nom",
+        "title": "Name",
         "type": "string",
         "default": "Xiaomi Cameras",
         "required": true
       },
       "uiUsername": {
-        "title": "Identifiant de l'interface go2rtc",
+        "title": "go2rtc web UI username",
         "type": "string",
-        "description": "Fortement conseillé : sans identifiant, tout le réseau local peut voir les caméras."
+        "description": "Strongly recommended: without it, the whole local network can watch the cameras."
       },
       "uiPassword": {
-        "title": "Mot de passe de l'interface go2rtc",
+        "title": "go2rtc web UI password",
         "type": "string"
       },
       "region": {
-        "title": "Région du compte Xiaomi",
+        "title": "Xiaomi account region",
         "type": "string",
-        "description": "Laissez vide pour chercher dans toutes les régions.",
+        "description": "Leave on Automatic to look in every region.",
         "oneOf": [
-          { "title": "Automatique", "enum": [""] },
+          { "title": "Automatic", "enum": [""] },
           { "title": "Europe (de)", "enum": ["de"] },
-          { "title": "Chine (cn)", "enum": ["cn"] },
-          { "title": "Inde (i2)", "enum": ["i2"] },
-          { "title": "Russie (ru)", "enum": ["ru"] },
-          { "title": "Singapour (sg)", "enum": ["sg"] },
-          { "title": "États-Unis (us)", "enum": ["us"] }
+          { "title": "Singapore (sg)", "enum": ["sg"] },
+          { "title": "United States (us)", "enum": ["us"] },
+          { "title": "Russia (ru)", "enum": ["ru"] },
+          { "title": "India (i2)", "enum": ["i2"] },
+          { "title": "China (cn)", "enum": ["cn"] }
+        ]
+      },
+      "language": {
+        "title": "Language of the logs and switch names",
+        "type": "string",
+        "default": "auto",
+        "oneOf": [
+          { "title": "Automatic (system language)", "enum": ["auto"] },
+          { "title": "English", "enum": ["en"] },
+          { "title": "Français", "enum": ["fr"] }
         ]
       },
       "apiPort": {
-        "title": "Port de l'interface go2rtc",
+        "title": "go2rtc web UI port",
         "type": "integer",
         "default": 1984
       },
       "rtspPort": {
-        "title": "Port RTSP local de go2rtc",
+        "title": "go2rtc local RTSP port",
         "type": "integer",
         "default": 8554,
-        "description": "Écoute uniquement sur 127.0.0.1."
+        "description": "Listens on 127.0.0.1 only."
       },
       "go2rtcPath": {
-        "title": "Chemin d'un go2rtc déjà installé (avancé)",
+        "title": "Path of an installed go2rtc (advanced)",
         "type": "string",
-        "description": "Laissez vide : le plugin télécharge et vérifie go2rtc-xiaomi-control, la version de go2rtc publiée avec lui."
+        "description": "Leave empty: the plugin downloads and checks go2rtc-xiaomi-control, the go2rtc build released with it."
       },
       "useOfficialGo2rtc": {
-        "title": "Utiliser le go2rtc officiel (avancé)",
+        "title": "Use the official go2rtc (advanced)",
         "type": "boolean",
         "default": false,
-        "description": "Télécharge go2rtc 1.9.14 officiel au lieu de go2rtc-xiaomi-control : sans orientation, réglages ni correction du son à 16 kHz."
+        "description": "Downloads the official go2rtc 1.9.14 instead of go2rtc-xiaomi-control: no pan/tilt, no settings, no 16 kHz audio fix."
       },
       "ffmpegPath": {
-        "title": "Chemin de ffmpeg",
+        "title": "FFmpeg path",
         "type": "string",
-        "description": "Laissez vide pour utiliser ffmpeg-for-homebridge."
+        "description": "Leave empty to use ffmpeg-for-homebridge."
       },
       "cameras": {
-        "title": "Réglages par caméra",
+        "title": "Camera settings",
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
             "did": {
-              "title": "Identifiant (did)",
+              "title": "Device id (did)",
               "type": "string",
               "required": true,
-              "description": "Affiché dans les logs quand la caméra est détectée."
+              "description": "Shown in the log when the camera is discovered."
             },
             "ip": {
-              "title": "Adresse IP (caméra non détectée)",
+              "title": "IP address (camera not discovered)",
               "type": "string",
-              "description": "À renseigner seulement si la caméra n'est pas trouvée automatiquement : elle est alors déclarée à la main."
+              "description": "Only if the camera is not found automatically: it is then declared manually."
             },
             "region": {
-              "title": "Région du compte (caméra déclarée à la main)",
+              "title": "Account region (declared camera)",
               "type": "string",
-              "description": "de (Europe), sg, i2, us, ru ou cn. Par défaut : la région globale, sinon de."
+              "description": "de (Europe), sg, us, ru, i2 or cn. Default: the general region, else de."
             },
             "model": {
-              "title": "Modèle Xiaomi (facultatif)",
+              "title": "Xiaomi model",
               "type": "string",
-              "description": "Par exemple chuangmi.camera.026c02 (MJSXJ10CM). Indispensable pour les réglages d'une caméra déclarée à la main."
+              "description": "For example chuangmi.camera.026c02 (MJSXJ10CM). Required for the settings of a declared camera."
             },
             "name": {
-              "title": "Nom",
+              "title": "Name",
               "type": "string"
             },
             "hidden": {
-              "title": "Ne pas exposer cette caméra",
+              "title": "Do not expose this camera",
               "type": "boolean",
               "default": false
             },
             "audio": {
-              "title": "Son",
+              "title": "Audio",
               "type": "boolean",
               "default": false
             },
             "audioSampleRate": {
-              "title": "Correction du son ralenti (go2rtc officiel uniquement)",
+              "title": "Slow audio fix (official go2rtc only)",
               "type": "integer",
               "oneOf": [
-                { "title": "Aucune", "enum": [0] },
-                { "title": "La caméra envoie du son à 16 kHz", "enum": [16000] }
+                { "title": "None", "enum": [0] },
+                { "title": "The camera sends 16 kHz audio", "enum": [16000] }
               ],
-              "description": "Seulement si le son est grave et ralenti avec le go2rtc officiel. Inutile, et même nuisible, avec go2rtc-xiaomi-control, qui corrige déjà ce problème."
+              "description": "Only if the voice sounds slow and deep with the official go2rtc. Useless, even harmful, with go2rtc-xiaomi-control, which already fixes it."
             },
             "videoMode": {
-              "title": "Vidéo",
+              "title": "Video",
               "type": "string",
               "default": "auto",
               "oneOf": [
-                { "title": "Automatique (copie si H.264, sinon réencodage)", "enum": ["auto"] },
-                { "title": "Toujours copier", "enum": ["copy"] },
-                { "title": "Toujours réencoder en H.264", "enum": ["transcode"] }
+                { "title": "Automatic (copy H.264, transcode otherwise)", "enum": ["auto"] },
+                { "title": "Always copy", "enum": ["copy"] },
+                { "title": "Always transcode to H.264", "enum": ["transcode"] }
               ]
             },
             "subtype": {
-              "title": "Qualité demandée à la caméra",
+              "title": "Quality requested from the camera",
               "type": "string",
               "oneOf": [
-                { "title": "Par défaut", "enum": [""] },
+                { "title": "Default", "enum": [""] },
                 { "title": "HD", "enum": ["hd"] },
-                { "title": "SD (plus léger)", "enum": ["sd"] }
+                { "title": "SD (lighter)", "enum": ["sd"] }
               ]
             },
             "encoder": {
-              "title": "Encodeur H.264 (réencodage)",
+              "title": "H.264 encoder (transcoding)",
               "type": "string",
               "default": "libx264",
-              "description": "libx264 (logiciel) ou h264_v4l2m2m (matériel, selon la carte)."
+              "description": "libx264 (software) or h264_v4l2m2m (hardware, board dependent)."
             },
             "maxWidth": {
-              "title": "Largeur maximale en réencodage",
+              "title": "Maximum width when transcoding",
               "type": "integer",
               "default": 1280
             },
             "settings": {
-              "title": "Interrupteurs de réglages (veille, voyant, suivi, détection, vision nocturne)",
+              "title": "Settings switches (standby, status light, motion tracking, motion detection, night vision)",
               "type": "boolean",
               "default": false,
-              "description": "Selon le modèle. Nécessite le bon \"Modèle Xiaomi\" pour une caméra déclarée à la main."
+              "description": "Depending on the model. A declared camera needs the right \"Xiaomi model\"."
             },
             "ptz": {
-              "title": "Boutons d'orientation (caméra motorisée)",
+              "title": "Pan/tilt switches (motorized camera)",
               "type": "boolean",
               "default": false,
-              "description": "Fonctionne pendant que la vidéo est ouverte."
+              "description": "They work while the live view is open."
             },
             "ptzPanSteps": {
-              "title": "Pas par appui, gauche / droite",
+              "title": "Steps per press, left / right",
               "type": "integer",
               "default": 1,
               "minimum": 1,
               "maximum": 20,
-              "description": "Un pas horizontal est petit : augmentez pour tourner davantage à chaque appui."
+              "description": "One horizontal step is small: increase it to turn more on each press."
             },
             "ptzTiltSteps": {
-              "title": "Pas par appui, haut / bas",
+              "title": "Steps per press, up / down",
               "type": "integer",
               "default": 1,
               "minimum": 1,
               "maximum": 20
             },
             "ptzLeft": {
-              "title": "Commande « Gauche » (avancé)",
+              "title": "\"Left\" command (advanced)",
               "type": "string",
               "placeholder": "{\"operation\":2}"
             },
             "ptzRight": {
-              "title": "Commande « Droite » (avancé)",
+              "title": "\"Right\" command (advanced)",
               "type": "string",
               "placeholder": "{\"operation\":1}"
             },
             "ptzUp": {
-              "title": "Commande « Haut » (avancé)",
+              "title": "\"Up\" command (advanced)",
               "type": "string",
               "placeholder": "{\"operation\":4}"
             },
             "ptzDown": {
-              "title": "Commande « Bas » (avancé)",
+              "title": "\"Down\" command (advanced)",
               "type": "string",
               "placeholder": "{\"operation\":3}"
             }

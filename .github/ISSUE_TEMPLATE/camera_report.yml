@@ -1,0 +1,47 @@
+name: Camera report
+description: Tell which Xiaomi camera works (or not) with the plugin, to help other users
+labels: [camera report]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks! These reports help other owners know if their camera is supported.
+  - type: input
+    id: camera
+    attributes:
+      label: Camera
+      description: Product name, reference and Xiaomi model.
+      placeholder: Mi 360° Camera 1080p, MJSXJ10CM, chuangmi.camera.026c02
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works
+        - Works partially
+        - Does not work
+    validations:
+      required: true
+  - type: checkboxes
+    id: features
+    attributes:
+      label: What works
+      options:
+        - label: Automatic discovery
+        - label: Live video
+        - label: Snapshots
+        - label: Audio
+        - label: Pan/tilt
+        - label: Settings switches
+  - type: input
+    id: stream
+    attributes:
+      label: Stream
+      description: The "Stream detected" log line (video and audio codecs), and the subtype used.
+      placeholder: "video hevc, audio pcm_alaw, subtype sd"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Region, server hardware, anything useful.

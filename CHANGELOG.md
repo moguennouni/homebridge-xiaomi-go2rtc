@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- English by default: log messages, switch names and the Homebridge UI settings screen. Logs and switch names are
+  in French when the system language is French, or with the new `language` option (`auto`, `en`, `fr`).
+  **Upgrading from 0.4.x:** if your system is not in French, the switches are renamed in English (Left, Standby...);
+  set `language` to `fr` to keep the French names. Names you changed yourself in the Home app are kept.
+- Bug report and camera report forms on GitHub.
+
 ## 0.4.1
 
 - go2rtc-xiaomi-control binaries are built with an empty Go build ID, so rebuilding them on any system (Linux,

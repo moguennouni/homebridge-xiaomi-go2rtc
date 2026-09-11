@@ -1,5 +1,10 @@
 # homebridge-xiaomi-go2rtc
 
+[![npm](https://img.shields.io/npm/v/homebridge-xiaomi-go2rtc)](https://www.npmjs.com/package/homebridge-xiaomi-go2rtc)
+[![npm downloads](https://img.shields.io/npm/dt/homebridge-xiaomi-go2rtc)](https://www.npmjs.com/package/homebridge-xiaomi-go2rtc)
+[![CI](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/actions/workflows/ci.yml/badge.svg)](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 [Version française](README.fr.md)
 
 Homebridge plugin that brings **Xiaomi Mi Home cameras to Apple Home (HomeKit)**: live video, snapshots, audio,
@@ -9,8 +14,7 @@ Xiaomi cameras do not provide RTSP: they stream through Xiaomi's encrypted P2P p
 manages [go2rtc](https://github.com/AlexxIT/go2rtc), which speaks this protocol, and exposes each camera as a
 HomeKit camera.
 
-> **Not affiliated with Xiaomi, Apple, Homebridge or go2rtc.** See [Disclaimer](#disclaimer). Log messages and
-> Homebridge UI labels are currently in French.
+> **Not affiliated with Xiaomi, Apple, Homebridge or go2rtc.** See [Disclaimer](#disclaimer).
 
 ## Contents
 
@@ -130,11 +134,13 @@ On first start, the plugin downloads go2rtc-xiaomi-control for your system from 
 and checks its SHA-256 digest (written in the plugin itself). The log then shows:
 
 ```
-Téléchargement de go2rtc-xiaomi-control 1.9.14-xiaomi-control...
-go2rtc-xiaomi-control 1.9.14-xiaomi-control téléchargé et vérifié.
-go2rtc-xiaomi-control démarré. Interface web : http://192.168.1.10:1984
-Aucun compte Xiaomi connecté. Ouvrez http://192.168.1.10:1984, cliquez sur "Add" puis "Xiaomi"...
+Downloading go2rtc-xiaomi-control 1.9.14-xiaomi-control...
+go2rtc-xiaomi-control 1.9.14-xiaomi-control downloaded and checked.
+go2rtc-xiaomi-control started. Web UI: http://192.168.1.10:1984
+No Xiaomi account connected. Open http://192.168.1.10:1984, click "Add" then "Xiaomi"...
 ```
+
+Logs and switch names follow the system language (English or French); force it with the `language` option.
 
 ## Connect your Xiaomi account
 
@@ -151,7 +157,7 @@ stored by the plugin.
 4. Within 30 seconds, the Homebridge log shows each discovered camera:
 
    ```
-   Caméra ajoutée : "Living room" (chuangmi.camera.026c02, 192.168.1.50, did 123456789).
+   Camera added: "Living room" (chuangmi.camera.026c02, 192.168.1.50, did 123456789).
    ```
 
 go2rtc stores a token (not your password) in `xiaomi-go2rtc/go2rtc.yaml`, in the Homebridge storage folder
@@ -161,7 +167,7 @@ go2rtc stores a token (not your password) in `xiaomi-go2rtc/go2rtc.yaml`, in the
 
 Some cameras, such as the **MJSXJ10CM**, work in Mi Home but are missing from the device list the Xiaomi cloud
 returns to third-party tools. go2rtc then answers "no sources" in every region, and the log shows
-`Aucune caméra trouvée automatiquement`. They can still be used if you give their **IP address**, **did** (device
+`No camera found automatically`. They can still be used if you give their **IP address**, **did** (device
 id) and **region**.
 
 ### Find the did, IP and region automatically
@@ -194,7 +200,7 @@ finds it for you.
 
 ### Declare the camera
 
-In the plugin settings → **Réglages par caméra** (camera settings) → add a camera, or in `config.json`:
+In the plugin settings → **Camera settings** → add a camera, or in `config.json`:
 
 ```json
 "cameras": [
@@ -231,7 +237,7 @@ the P2P connection.
 HomeKit only accepts **H.264** video. The log shows what the camera sends:
 
 ```
-[Living room] Flux détecté : vidéo hevc, audio pcm_alaw → réencodage en H.264.
+[Living room] Stream detected: video hevc, audio pcm_alaw → transcoded to H.264.
 ```
 
 - **`h264`**: copied as is, fine on any server.
@@ -258,10 +264,10 @@ you use the official go2rtc (`useOfficialGo2rtc`), set `"audioSampleRate": 16000
 
 ## Pan/tilt and camera settings
 
-- **Pan/tilt** (`"ptz": true`): four switches, Gauche / Droite / Haut / Bas (left / right / up / down). They only
+- **Pan/tilt** (`"ptz": true`): four switches, Left / Right / Up / Down. They only
   work **while the live view is open**, because the command goes through the video connection.
-- **Settings** (`"settings": true`): Veille (standby), Voyant (indicator light), Suivi des mouvements (motion
-  tracking), Détection de mouvement (motion detection), Vision nocturne (night vision, auto or off), depending on
+- **Settings** (`"settings": true`): Standby, Status light, Motion tracking, Motion detection, Night vision (auto or
+  off), depending on
   what the model exposes. The plugin finds them in the public MIoT specification of the model (miot-spec.org), so
   `model` must be known (automatic for discovered cameras). They go through the Xiaomi cloud and are read again
   every minute, to follow changes made in Mi Home.
@@ -311,6 +317,7 @@ settings or the audio fix), and `go2rtcPath` runs a go2rtc binary you installed 
 |---|---|---|
 | `platform` | | Must be `XiaomiGo2rtc` |
 | `name` | `Xiaomi Cameras` | Name of the platform in the logs |
+| `language` | `auto` | Language of the logs and switch names: `auto` (system language), `en`, `fr` |
 | `uiUsername`, `uiPassword` | none | Login of the go2rtc web UI from the local network. **Strongly recommended.** |
 | `region` | automatic | Xiaomi server of your account (`de`, `sg`, `us`, `ru`, `i2`, `cn`). Speeds up discovery; also the default region of declared cameras |
 | `apiPort` | `1984` | Port of the go2rtc web UI and API |
@@ -366,17 +373,17 @@ messages.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| "no sources" in every region in go2rtc, `Aucune caméra trouvée automatiquement` | The Xiaomi cloud does not list this camera | [Declare it](#declare-a-camera-that-is-not-discovered) |
+| "no sources" in every region in go2rtc, `No camera found automatically` | The Xiaomi cloud does not list this camera | [Declare it](#declare-a-camera-that-is-not-discovered) |
 | `streams: xiaomi: permit deny` | Wrong region (or wrong did) for this account | Run `find-xiaomi-camera.sh` |
-| `Capture d'écran impossible ... 404 Not Found` | go2rtc cannot open the stream | Look at the go2rtc line just before |
-| `Échec du téléchargement de go2rtc-xiaomi-control` | No Internet access, or GitHub unreachable, at first start | Check the connection, restart Homebridge |
-| `Empreinte SHA-256 ... invalide` | The downloaded file is not the expected one | Retry; if it persists, open an issue (never bypass this check) |
+| `Cannot take a snapshot ... 404 Not Found` | go2rtc cannot open the stream | Look at the go2rtc line just before |
+| `Cannot download go2rtc-xiaomi-control` | No Internet access, or GitHub unreachable, at first start | Check the connection, restart Homebridge |
+| `Invalid SHA-256 digest` | The downloaded file is not the expected one | Retry; if it persists, open an issue (never bypass this check) |
 | Choppy or late video, 100 % CPU | H.265 transcoding too heavy | `"subtype": "sd"`, lower `maxWidth` |
 | Slow, deep voice | 16 kHz camera audio labelled 8 kHz | Use the default go2rtc-xiaomi-control, or `"audioSampleRate": 16000` with the official go2rtc |
-| `Ce go2rtc ne gère pas l'orientation` / `les réglages` | The official or a custom go2rtc is running | Remove `go2rtcPath` and `useOfficialGo2rtc` |
-| `Ouvrez la caméra dans l'app Maison pour pouvoir l'orienter` | Pan/tilt used while the live view is closed | Open the live view first |
-| `Modèle "..." inconnu de miot-spec.org` | Missing or wrong `model` | Set `model` |
-| `modification impossible (refusé par le cloud Xiaomi (code ...))` | This model does not accept this setting through the cloud | Change it in Mi Home instead |
+| `This go2rtc does not support pan/tilt` / `settings` | The official or a custom go2rtc is running | Remove `go2rtcPath` and `useOfficialGo2rtc` |
+| `Open the camera in the Home app to move it` | Pan/tilt used while the live view is closed | Open the live view first |
+| `Model "..." unknown to miot-spec.org` | Missing or wrong `model` | Set `model` |
+| `cannot change it (refused by the Xiaomi cloud (code ...))` | This model does not accept this setting through the cloud | Change it in Mi Home instead |
 | `sudo: unknown user homebridge` while installing | Homebridge is not installed with the official image | Use the command matching your installation |
 
 Also check the stream in the go2rtc web UI (Streams tab): if it does not play there, the problem is between go2rtc
