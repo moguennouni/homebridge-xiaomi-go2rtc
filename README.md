@@ -297,7 +297,8 @@ trigger automations. The sensor stays on for `motionDuration` seconds (15 by def
 but not an instant one: the cloud lists an event 20 to 30 s after it happened (measured on a MJSXJ10CM), so
 checking every 5 s instead of 10 s saves 5 s at most. `"motionTypes": "people"` ignores anything but people
 (`PeopleMotion`, faces). Events found at startup, or more than 2 minutes old after a cloud outage, do not trigger
-the sensor.
+the sensor. The notification shows the thumbnail the camera took with the event, so the person is in it despite the
+delay (a live snapshot is used when the thumbnail cannot be read).
 
 **Camera** (`"motionSource": "camera"`): the plugin keeps a light connection to the camera (no video, no decoding,
 a few bytes now and then, reusing the video connection while you are watching). Every turn of the tracking raises

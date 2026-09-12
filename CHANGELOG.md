@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0
+
+- **The notification shows the movement**: with the cloud motion source, the notification snapshot is now the
+  thumbnail the camera took with the event, instead of a live snapshot taken 20 to 30 s later, when the scene is
+  often empty again. It also spares a H.265 decoding by FFmpeg for each notification. When the thumbnail cannot be
+  read, the notification falls back to a live snapshot.
+- go2rtc-xiaomi-control: event thumbnail (`/api/xiaomi/image`), downloaded from the Xiaomi cloud and decrypted
+  (AES-128-CBC).
+
 ## 0.7.1
 
 - Cloud motion source: each detection is now written to the log (type of event and delay), not only in debug mode.

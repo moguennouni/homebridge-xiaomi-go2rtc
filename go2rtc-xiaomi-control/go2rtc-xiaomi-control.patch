@@ -26,7 +26,7 @@ index 984c73e..344a9ae 100644
  	sources := make([]string, 0, len(s.producers))
  	for _, prod := range s.producers {
 diff --git a/internal/xiaomi/xiaomi.go b/internal/xiaomi/xiaomi.go
-index 1801fa8..ebd5121 100644
+index 1801fa8..c2c00af 100644
 --- a/internal/xiaomi/xiaomi.go
 +++ b/internal/xiaomi/xiaomi.go
 @@ -7,8 +7,10 @@ import (
@@ -49,7 +49,7 @@ index 1801fa8..ebd5121 100644
  )
  
  func Init() {
-@@ -46,7 +50,394 @@ func Init() {
+@@ -46,7 +50,443 @@ func Init() {
  		return xiaomi.Dial(rawURL)
  	})
  
@@ -70,6 +70,7 @@ index 1801fa8..ebd5121 100644
 +	api.HandleFunc("api/xiaomi/watch", apiWatch)
 +	api.HandleFunc("api/xiaomi/motion", apiMotion)
 +	api.HandleFunc("api/xiaomi/events", apiEvents)
++	api.HandleFunc("api/xiaomi/image", apiEventImage)
 +}
 +
 +type miotParam struct {
@@ -292,6 +293,54 @@ index 1801fa8..ebd5121 100644
 +	_, _ = w.Write(res)
 +}
 +
++// processorBaseURL is the Xiaomi host that serves the event thumbnails.
++func processorBaseURL(region string) string {
++	host := "processor.smartcamera.api.io.mi.com"
++	if region != "" && region != "cn" {
++		host = region + "." + host
++	}
++	return "https://" + host
++}
++
++// apiEventImage returns, as a JPEG, the thumbnail the camera took with an event of the event list (its fileId and
++// imgStoreId): GET /api/xiaomi/image?src=camera1&fileId=123&stoId=CAMERA_IMG_...
++func apiEventImage(w http.ResponseWriter, r *http.Request) {
++	query := r.URL.Query()
++	stream := streams.Get(query.Get("src"))
++	if stream == nil {
++		http.Error(w, "stream not found", http.StatusNotFound)
++		return
++	}
++
++	u := xiaomiSource(stream)
++	if u == nil || u.User == nil {
++		http.Error(w, "not a Xiaomi cloud stream", http.StatusBadRequest)
++		return
++	}
++
++	fileID, storeID := query.Get("fileId"), query.Get("stoId")
++	if fileID == "" || storeID == "" {
++		http.Error(w, "fileId and stoId are required", http.StatusBadRequest)
++		return
++	}
++
++	cloud, err := getCloud(u.User.Username())
++	if err != nil {
++		http.Error(w, err.Error(), http.StatusInternalServerError)
++		return
++	}
++
++	region, _ := u.User.Password()
++	image, err := cloud.RequestEventImage(processorBaseURL(region), u.Query().Get("did"), fileID, storeID)
++	if err != nil {
++		http.Error(w, err.Error(), http.StatusBadGateway)
++		return
++	}
++
++	w.Header().Set("Content-Type", "image/jpeg")
++	_, _ = w.Write(image)
++}
++
 +type subscriber interface {
 +	Subscribe() (<-chan []byte, func())
 +}
@@ -458,33 +507,29 @@ index ca70e84..743a900 100644
  	type module struct {
  		name string
 diff --git a/pkg/xiaomi/cloud.go b/pkg/xiaomi/cloud.go
-index 0dcfd24..d34ddbd 100644
+index 0dcfd24..8c61c7c 100644
 --- a/pkg/xiaomi/cloud.go
 +++ b/pkg/xiaomi/cloud.go
-@@ -392,6 +392,59 @@ func (c *Cloud) UserToken() (string, string) {
+@@ -2,6 +2,8 @@ package xiaomi
+ 
+ import (
+ 	"bytes"
++	"crypto/aes"
++	"crypto/cipher"
+ 	"crypto/md5"
+ 	"crypto/rand"
+ 	"crypto/rc4"
+@@ -392,6 +394,146 @@ func (c *Cloud) UserToken() (string, string) {
  	return c.userID, c.passToken
  }
  
 +// RequestGet calls an API that expects an encrypted GET, like the camera APIs, and returns the decrypted
 +// body as is (their answers use "data", not "result" like the miotspec ones).
 +func (c *Cloud) RequestGet(baseURL, apiURL, params string) ([]byte, error) {
-+	query := url.Values{"data": {params}}
-+
-+	nonce := genNonce()
-+	signedNonce := genSignedNonce(c.ssecurity, nonce)
-+
-+	query.Set("rc4_hash__", genSignature64("GET", apiURL, query, signedNonce))
-+
-+	for _, v := range query {
-+		ciphertext, err := crypt(signedNonce, []byte(v[0]))
-+		if err != nil {
-+			return nil, err
-+		}
-+		v[0] = base64.StdEncoding.EncodeToString(ciphertext)
++	query, signedNonce, err := c.encryptQuery(apiURL, params)
++	if err != nil {
++		return nil, err
 +	}
-+
-+	query.Set("signature", genSignature64("GET", apiURL, query, signedNonce))
-+	query.Set("_nonce", base64.StdEncoding.EncodeToString(nonce))
 +
 +	req, err := http.NewRequest("GET", baseURL+apiURL+"?"+query.Encode(), nil)
 +	if err != nil {
@@ -516,6 +561,106 @@ index 0dcfd24..d34ddbd 100644
 +	}
 +
 +	return crypt(signedNonce, ciphertext)
++}
++
++// encryptQuery signs and encrypts the parameters of a GET request to the camera APIs.
++func (c *Cloud) encryptQuery(apiURL, params string) (url.Values, []byte, error) {
++	query := url.Values{"data": {params}}
++
++	nonce := genNonce()
++	signedNonce := genSignedNonce(c.ssecurity, nonce)
++
++	query.Set("rc4_hash__", genSignature64("GET", apiURL, query, signedNonce))
++
++	for _, v := range query {
++		ciphertext, err := crypt(signedNonce, []byte(v[0]))
++		if err != nil {
++			return nil, nil, err
++		}
++		v[0] = base64.StdEncoding.EncodeToString(ciphertext)
++	}
++
++	query.Set("signature", genSignature64("GET", apiURL, query, signedNonce))
++	query.Set("_nonce", base64.StdEncoding.EncodeToString(nonce))
++	return query, signedNonce, nil
++}
++
++// RequestEventImage downloads the thumbnail the camera took with an event. The server answers the JPEG
++// encrypted with AES-128-CBC, keyed with ssecurity and the IV sent in the request (segmentIv).
++func (c *Cloud) RequestEventImage(baseURL, did, fileID, storeID string) ([]byte, error) {
++	iv := make([]byte, aes.BlockSize)
++	if _, err := rand.Read(iv); err != nil {
++		return nil, err
++	}
++
++	params, err := json.Marshal(map[string]string{
++		"did": did, "fileId": fileID, "stoId": storeID, "segmentIv": base64.StdEncoding.EncodeToString(iv),
++	})
++	if err != nil {
++		return nil, err
++	}
++
++	const apiURL = "/miot/camera/app/v1/img"
++	query, _, err := c.encryptQuery(apiURL, string(params))
++	if err != nil {
++		return nil, err
++	}
++	query.Set("yetAnotherServiceToken", c.serviceToken())
++
++	req, err := http.NewRequest("GET", baseURL+apiURL+"?"+query.Encode(), nil)
++	if err != nil {
++		return nil, err
++	}
++	req.Header.Set("Cookie", c.cookies)
++
++	res, err := c.client.Do(req)
++	if err != nil {
++		return nil, err
++	}
++	defer res.Body.Close()
++
++	body, err := io.ReadAll(io.LimitReader(res.Body, 4<<20))
++	if err != nil {
++		return nil, err
++	}
++	if res.StatusCode != http.StatusOK {
++		return nil, fmt.Errorf("xiaomi: %s %s", res.Status, shortBody(body))
++	}
++	// Errors come back as JSON, whose length is rarely a multiple of the block size
++	if len(body) == 0 || len(body)%aes.BlockSize != 0 {
++		return nil, fmt.Errorf("xiaomi: not an encrypted image: %s", shortBody(body))
++	}
++
++	block, err := aes.NewCipher(c.ssecurity)
++	if err != nil {
++		return nil, err
++	}
++	image := make([]byte, len(body))
++	cipher.NewCBCDecrypter(block, iv).CryptBlocks(image, body)
++
++	if pad := int(image[len(image)-1]); pad >= 1 && pad <= aes.BlockSize {
++		image = image[:len(image)-pad]
++	}
++	if !bytes.HasPrefix(image, []byte{0xFF, 0xD8}) {
++		return nil, errors.New("xiaomi: the decrypted thumbnail is not a JPEG image")
++	}
++	return image, nil
++}
++
++func (c *Cloud) serviceToken() string {
++	for _, part := range strings.Split(c.cookies, "; ") {
++		if token, ok := strings.CutPrefix(part, "serviceToken="); ok {
++			return token
++		}
++	}
++	return ""
++}
++
++func shortBody(body []byte) string {
++	if len(body) > 200 {
++		body = body[:200]
++	}
++	return strings.ToValidUTF8(string(body), "?")
 +}
 +
  func (c *Cloud) Request(baseURL, apiURL, params string, headers map[string]string) ([]byte, error) {

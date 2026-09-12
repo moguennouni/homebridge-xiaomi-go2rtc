@@ -303,7 +303,9 @@ après le dernier mouvement. `motionSource` choisit ce qui l'alimente :
 mais pas instantanée : le cloud liste un événement 20 à 30 s après qu'il a eu lieu (mesuré sur une MJSXJ10CM), donc
 interroger toutes les 5 s au lieu de 10 fait gagner 5 s au mieux. `"motionTypes": "people"` ignore tout ce qui n'est
 pas une personne (`PeopleMotion`, visages). Les événements déjà présents au démarrage, ou vieux de plus de 2 minutes
-après une panne du cloud, ne déclenchent pas le capteur.
+après une panne du cloud, ne déclenchent pas le capteur. La notification montre la vignette prise par la caméra au
+moment de l'événement : la personne y figure malgré le retard (une capture en direct la remplace si la vignette est
+illisible).
 
 **Caméra** (`"motionSource": "camera"`) : le plugin garde une connexion légère avec la caméra (pas de vidéo, pas de
 décodage, quelques octets de temps en temps, en réutilisant la connexion vidéo pendant que vous regardez). Chaque
