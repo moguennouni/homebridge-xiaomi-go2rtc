@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a new feature or an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please check the [README](https://github.com/moguennouni/homebridge-xiaomi-go2rtc#readme) and the existing issues first: it may already exist or be planned.
+        For a question about installation or configuration, use [Discussions](https://github.com/moguennouni/homebridge-xiaomi-go2rtc/discussions) instead.
+  - type: textarea
+    id: need
+    attributes:
+      label: What you would like to do
+      description: The need, in your own words. What is missing or annoying today?
+      placeholder: I get a notification each time my children move in front of the camera...
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it could work
+      description: The solution you have in mind, if any (a setting, a switch, a HomeKit feature...).
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Workarounds or other plugins you use for this today.
+  - type: input
+    id: camera
+    attributes:
+      label: Camera
+      description: Product name or reference (e.g. MJSXJ10CM) and Xiaomi model if known (e.g. chuangmi.camera.026c02).
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Can you help?
+      options:
+        - I can test it on my camera
+        - I can submit a pull request
+        - No

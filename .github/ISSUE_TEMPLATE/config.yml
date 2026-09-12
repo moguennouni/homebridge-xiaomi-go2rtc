@@ -3,3 +3,6 @@ contact_links:
   - name: Documentation
     url: https://github.com/moguennouni/homebridge-xiaomi-go2rtc#readme
     about: Installation, configuration and troubleshooting guide (English and French).
+  - name: Questions & ideas
+    url: https://github.com/moguennouni/homebridge-xiaomi-go2rtc/discussions
+    about: Ask a question, share your setup or discuss an idea before opening a request (English or French).
