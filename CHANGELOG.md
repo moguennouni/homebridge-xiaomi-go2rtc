@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1
+
+- Cloud motion source: each detection is now written to the log (type of event and delay), not only in debug mode.
+  Without it, a working sensor left no trace.
+
 ## 0.7.0
 
 - **Motion sensor source** (`motionSource`): `cloud`, the new default, reads the events of the camera from the
