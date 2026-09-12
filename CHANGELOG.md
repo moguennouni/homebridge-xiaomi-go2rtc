@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0
+
+- **Motion sensor** (`motion`), fed by the camera itself, in real time and without the cloud: when its motion
+  tracking turns to follow a movement, the camera reports it and the plugin raises a HomeKit motion event. Needs
+  "motion tracking" enabled on the camera; `motionDuration` sets how long the sensor stays on (15 s by default).
+  The plugin keeps a light connection to the camera, without video, and reuses the video connection when there is
+  one.
+- go2rtc-xiaomi-control: motion event stream (`/api/xiaomi/motion`), read-only list of the Xiaomi cloud events
+  (`/api/xiaomi/events`, encrypted GET requests), diagnostic listener (`/api/xiaomi/watch`), and a guard against a
+  crash when the camera sends data on a channel go2rtc does not use.
+- Fix: the MIoT specification could not be cached when its folder was missing, which silently removed the settings
+  switches.
+
 ## 0.5.0
 
 - English by default: log messages, switch names and the Homebridge UI settings screen. Logs and switch names are

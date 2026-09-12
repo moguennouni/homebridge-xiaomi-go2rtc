@@ -27,6 +27,7 @@ HomeKit camera.
 - [Add the camera to the Home app](#add-the-camera-to-the-home-app)
 - [Video performance](#video-performance)
 - [Audio](#audio)
+- [Motion sensor](#motion-sensor)
 - [Pan/tilt and camera settings](#pantilt-and-camera-settings)
 - [About go2rtc-xiaomi-control](#about-go2rtc-xiaomi-control)
 - [Configuration reference](#configuration-reference)
@@ -43,6 +44,7 @@ HomeKit camera.
 - H.264 cameras are copied as is (almost no CPU); H.265 cameras are transcoded to H.264, the only codec HomeKit
   accepts.
 - Audio from the camera microphone.
+- A motion sensor fed by the camera itself, in real time, without the cloud.
 - Pan/tilt switches and camera settings switches (standby, indicator light, motion tracking, motion detection,
   night vision), grouped with the camera.
 - Nothing else to install: the plugin downloads and checks the go2rtc build it needs.
@@ -276,6 +278,21 @@ Some cameras (e.g. `chuangmi.camera.026c02`) send 16 kHz audio, which the offici
 then sounds slow and deep. go2rtc-xiaomi-control, used by default, measures the real rate and fixes it. Only if
 you use the official go2rtc (`useOfficialGo2rtc`), set `"audioSampleRate": 16000` on such a camera.
 
+## Motion sensor
+
+`"motion": true` adds a HomeKit motion sensor to the camera, fed by the camera itself, in real time and without
+the cloud: when its motion tracking turns to follow a movement, it reports it, and the plugin turns that into a
+motion event. You then get notifications in the Home app and can trigger automations.
+
+- **"Motion tracking" must be enabled on the camera** (the `Motion tracking` switch, or Mi Home): it is by turning
+  to follow that the camera reports a movement.
+- The sensor stays on for `motionDuration` seconds (15 by default) after the last report.
+- The plugin keeps a light connection to the camera: no video, no decoding, a few bytes now and then. It reuses
+  the video connection while you are watching.
+- The motion events of the Xiaomi cloud (what Mi Home lists, with `PeopleMotion` / `ObjectMotion` types) are **not**
+  used: measured on a MJSXJ10CM, they arrive 20 to 60 s late, and at most one every 3 minutes, the alarm interval
+  of the camera. `GET /api/xiaomi/events` of go2rtc-xiaomi-control reads them if you want to experiment.
+
 ## Pan/tilt and camera settings
 
 - **Pan/tilt** (`"ptz": true`): four switches, Left / Right / Up / Down. They only
@@ -358,6 +375,8 @@ settings or the audio fix), and `go2rtcPath` runs a go2rtc binary you installed 
 | `maxWidth` | `1280` | Maximum width when transcoding |
 | `audio` | `false` | Audio from the camera |
 | `audioSampleRate` | `0` | `16000` fixes slow, deep audio, with the **official** go2rtc only |
+| `motion` | `false` | Motion sensor, needs motion tracking enabled on the camera |
+| `motionDuration` | `15` | How long the motion sensor stays on, in seconds |
 | `settings` | `false` | Settings switches |
 | `ptz` | `false` | Pan/tilt switches |
 | `ptzPanSteps`, `ptzTiltSteps` | `1` | Motor steps per press, horizontal and vertical |

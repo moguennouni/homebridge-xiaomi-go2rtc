@@ -26,13 +26,48 @@
         "type": "string",
         "description": "Leave on Automatic to look in every region.",
         "oneOf": [
-          { "title": "Automatic", "enum": [""] },
-          { "title": "Europe (de)", "enum": ["de"] },
-          { "title": "Singapore (sg)", "enum": ["sg"] },
-          { "title": "United States (us)", "enum": ["us"] },
-          { "title": "Russia (ru)", "enum": ["ru"] },
-          { "title": "India (i2)", "enum": ["i2"] },
-          { "title": "China (cn)", "enum": ["cn"] }
+          {
+            "title": "Automatic",
+            "enum": [
+              ""
+            ]
+          },
+          {
+            "title": "Europe (de)",
+            "enum": [
+              "de"
+            ]
+          },
+          {
+            "title": "Singapore (sg)",
+            "enum": [
+              "sg"
+            ]
+          },
+          {
+            "title": "United States (us)",
+            "enum": [
+              "us"
+            ]
+          },
+          {
+            "title": "Russia (ru)",
+            "enum": [
+              "ru"
+            ]
+          },
+          {
+            "title": "India (i2)",
+            "enum": [
+              "i2"
+            ]
+          },
+          {
+            "title": "China (cn)",
+            "enum": [
+              "cn"
+            ]
+          }
         ]
       },
       "language": {
@@ -40,9 +75,24 @@
         "type": "string",
         "default": "auto",
         "oneOf": [
-          { "title": "Automatic (system language)", "enum": ["auto"] },
-          { "title": "English", "enum": ["en"] },
-          { "title": "Français", "enum": ["fr"] }
+          {
+            "title": "Automatic (system language)",
+            "enum": [
+              "auto"
+            ]
+          },
+          {
+            "title": "English",
+            "enum": [
+              "en"
+            ]
+          },
+          {
+            "title": "Français",
+            "enum": [
+              "fr"
+            ]
+          }
         ]
       },
       "apiPort": {
@@ -117,28 +167,81 @@
               "title": "Slow audio fix (official go2rtc only)",
               "type": "integer",
               "oneOf": [
-                { "title": "None", "enum": [0] },
-                { "title": "The camera sends 16 kHz audio", "enum": [16000] }
+                {
+                  "title": "None",
+                  "enum": [
+                    0
+                  ]
+                },
+                {
+                  "title": "The camera sends 16 kHz audio",
+                  "enum": [
+                    16000
+                  ]
+                }
               ],
               "description": "Only if the voice sounds slow and deep with the official go2rtc. Useless, even harmful, with go2rtc-xiaomi-control, which already fixes it."
+            },
+            "motion": {
+              "title": "Motion sensor",
+              "type": "boolean",
+              "default": false,
+              "description": "Needs \"motion tracking\" enabled on the camera: it reports a movement when it turns to follow it."
+            },
+            "motionDuration": {
+              "title": "Motion sensor duration (seconds)",
+              "type": "integer",
+              "default": 15,
+              "minimum": 5,
+              "maximum": 300
             },
             "videoMode": {
               "title": "Video",
               "type": "string",
               "default": "auto",
               "oneOf": [
-                { "title": "Automatic (copy H.264, transcode otherwise)", "enum": ["auto"] },
-                { "title": "Always copy", "enum": ["copy"] },
-                { "title": "Always transcode to H.264", "enum": ["transcode"] }
+                {
+                  "title": "Automatic (copy H.264, transcode otherwise)",
+                  "enum": [
+                    "auto"
+                  ]
+                },
+                {
+                  "title": "Always copy",
+                  "enum": [
+                    "copy"
+                  ]
+                },
+                {
+                  "title": "Always transcode to H.264",
+                  "enum": [
+                    "transcode"
+                  ]
+                }
               ]
             },
             "subtype": {
               "title": "Quality requested from the camera",
               "type": "string",
               "oneOf": [
-                { "title": "Default", "enum": [""] },
-                { "title": "HD", "enum": ["hd"] },
-                { "title": "SD (lighter)", "enum": ["sd"] }
+                {
+                  "title": "Default",
+                  "enum": [
+                    ""
+                  ]
+                },
+                {
+                  "title": "HD",
+                  "enum": [
+                    "hd"
+                  ]
+                },
+                {
+                  "title": "SD (lighter)",
+                  "enum": [
+                    "sd"
+                  ]
+                }
               ]
             },
             "encoder": {

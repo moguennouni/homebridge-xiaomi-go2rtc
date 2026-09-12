@@ -17,6 +17,10 @@ lines). It adds:
 | `POST /api/xiaomi/command?src=<stream>&cmd=<id>&data=<payload>` | Sends a MISS command to the Xiaomi camera of a **playing** stream and returns its reply. Used for pan/tilt (command `0x112`). |
 | Reading of camera command replies | The command channel has a 10-message buffer: unread replies would fill it and close the video connection. |
 | `GET /api/xiaomi/miot?src=<stream>&props=<siid>.<piid>,...` and `POST /api/xiaomi/miot?src=<stream>&siid=&piid=&value=` | Reads and writes MIoT properties (standby, indicator light...) of the camera behind the stream, through the Xiaomi cloud, with the account already connected in go2rtc. Only the device of the stream can be reached. |
+| `GET /api/xiaomi/motion?src=<stream>` | Server-Sent Events of what the camera says. A camera with motion tracking enabled reports a motor message when it turns to follow a movement: this is the only real-time motion signal it gives, and it works without any video. Reuses the connection of a playing stream when there is one. |
+| `GET /api/xiaomi/events?src=<stream>&minutes=&limit=` | The events the camera uploaded to the Xiaomi cloud, the list Mi Home shows (type, time, clip id). Read only. Needs encrypted GET requests, which go2rtc did not implement. |
+| `GET /api/xiaomi/watch?src=<stream>&seconds=` | Diagnostic: opens a connection without video and returns everything the camera sends during that time. |
+| Guard on the unused channels | The connection uses channels 0 and 2; data on any other channel dereferenced a nil pointer, which crashed go2rtc. It is now reported instead. |
 | A-law sample rate measured from the first packets | Some cameras (e.g. `chuangmi.camera.026c02`) send 16 kHz A-law, which go2rtc labels 8 kHz: the audio then plays at half speed, an octave lower. |
 | Version `1.9.14-xiaomi-control` | Makes the modified build recognizable in the web UI and logs. go2rtc itself appends `+dev.b5948cf.dirty`: built from go2rtc commit `b5948cf` (tag v1.9.14), with local modifications (the patch). |
 

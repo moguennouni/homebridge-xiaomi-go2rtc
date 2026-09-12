@@ -27,6 +27,7 @@ comme une caméra HomeKit.
 - [Ajouter la caméra dans l'app Maison](#ajouter-la-caméra-dans-lapp-maison)
 - [Performances vidéo](#performances-vidéo)
 - [Son](#son)
+- [Capteur de mouvement](#capteur-de-mouvement)
 - [Orientation et réglages de la caméra](#orientation-et-réglages-de-la-caméra)
 - [À propos de go2rtc-xiaomi-control](#à-propos-de-go2rtc-xiaomi-control)
 - [Référence de la configuration](#référence-de-la-configuration)
@@ -43,6 +44,7 @@ comme une caméra HomeKit.
 - Les caméras H.264 sont copiées telles quelles (presque aucun calcul). Les caméras H.265 sont réencodées en H.264,
   le seul codec accepté par HomeKit.
 - Son du micro de la caméra.
+- Un capteur de mouvement alimenté par la caméra elle-même, en temps réel, sans le cloud.
 - Interrupteurs d'orientation et interrupteurs de réglages (veille, voyant, suivi des mouvements, détection de
   mouvement, vision nocturne), regroupés avec la caméra.
 - Rien d'autre à installer : le plugin télécharge et vérifie la version de go2rtc dont il a besoin.
@@ -282,6 +284,23 @@ Certaines caméras (par exemple la `chuangmi.camera.026c02`) envoient un son à 
 fréquence et corrige le problème. Seulement si vous utilisez le go2rtc officiel (`useOfficialGo2rtc`), réglez
 `"audioSampleRate": 16000` sur une telle caméra.
 
+## Capteur de mouvement
+
+`"motion": true` ajoute un capteur de mouvement HomeKit à la caméra, alimenté par la caméra elle-même, en temps
+réel et sans le cloud : quand son suivi de mouvement la fait tourner pour suivre quelqu'un, elle le signale, et le
+plugin en fait un événement de mouvement. Vous recevez alors les notifications de l'app Maison et pouvez déclencher
+des automatisations.
+
+- **Le « suivi de mouvement » doit être activé sur la caméra** (interrupteur `Suivi des mouvements`, ou Mi Home) :
+  c'est en tournant pour suivre qu'elle signale un mouvement.
+- Le capteur reste actif `motionDuration` secondes (15 par défaut) après le dernier signalement.
+- Le plugin garde une connexion légère avec la caméra : pas de vidéo, pas de décodage, quelques octets de temps en
+  temps. Il réutilise la connexion vidéo pendant que vous regardez.
+- Les événements de mouvement du cloud Xiaomi (ceux que liste Mi Home, avec les types `PeopleMotion` et
+  `ObjectMotion`) ne sont **pas** utilisés : mesurés sur une MJSXJ10CM, ils arrivent avec 20 à 60 s de retard, et au
+  mieux un toutes les 3 minutes, l'intervalle d'alerte de la caméra. `GET /api/xiaomi/events` de
+  go2rtc-xiaomi-control permet de les lire si vous voulez expérimenter.
+
 ## Orientation et réglages de la caméra
 
 - **Orientation** (`"ptz": true`) : quatre interrupteurs, Gauche / Droite / Haut / Bas (Left / Right / Up / Down
@@ -366,6 +385,8 @@ orientation, réglages ni correction du son), et `go2rtcPath` lance un binaire g
 | `maxWidth` | `1280` | Largeur maximale en réencodage |
 | `audio` | `false` | Son de la caméra |
 | `audioSampleRate` | `0` | `16000` corrige un son grave et ralenti, avec le go2rtc **officiel** uniquement |
+| `motion` | `false` | Capteur de mouvement, nécessite le suivi de mouvement activé sur la caméra |
+| `motionDuration` | `15` | Durée pendant laquelle le capteur reste actif, en secondes |
 | `settings` | `false` | Interrupteurs de réglages |
 | `ptz` | `false` | Interrupteurs d'orientation |
 | `ptzPanSteps`, `ptzTiltSteps` | `1` | Pas du moteur par appui, horizontal et vertical |
