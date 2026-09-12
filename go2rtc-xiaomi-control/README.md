@@ -9,8 +9,7 @@ homebridge-xiaomi-go2rtc for the optional features that the official go2rtc does
 
 ## Changes compared to go2rtc 1.9.14
 
-The complete and only list of changes is [`go2rtc-xiaomi-control.patch`](go2rtc-xiaomi-control.patch) (about 230
-lines). It adds:
+The complete and only list of changes is [`go2rtc-xiaomi-control.patch`](go2rtc-xiaomi-control.patch). It adds:
 
 | Change | Why |
 |---|---|

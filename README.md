@@ -44,7 +44,8 @@ HomeKit camera.
 - H.264 cameras are copied as is (almost no CPU); H.265 cameras are transcoded to H.264, the only codec HomeKit
   accepts.
 - Audio from the camera microphone.
-- A motion sensor fed by the camera itself, in real time, without the cloud.
+- A motion sensor for notifications and automations, fed by the camera's own detection through the Xiaomi cloud
+  (the notification shows the thumbnail of the movement), or by the camera motor, in real time.
 - Pan/tilt switches and camera settings switches (standby, indicator light, motion tracking, motion detection,
   night vision), grouped with the camera.
 - Nothing else to install: the plugin downloads and checks the go2rtc build it needs.
@@ -63,7 +64,8 @@ Xiaomi camera ──(local network, encrypted P2P)──► go2rtc ──(RTSP, 
 - The video goes from the camera to your server **on your local network**, then to your Apple devices.
 - go2rtc needs Internet access at each connection to get the encryption keys from the Xiaomi cloud, with your
   account.
-- go2rtc connects to a camera only while someone watches it or a snapshot is requested.
+- go2rtc connects to a camera only while someone watches it or a snapshot is requested, and permanently with the
+  `camera` motion source. The `cloud` motion source only queries the Xiaomi cloud.
 - The go2rtc build used by default is [go2rtc-xiaomi-control](#about-go2rtc-xiaomi-control): the official go2rtc
   plus a small public patch, built by GitHub Actions for each release of this plugin.
 
@@ -337,7 +339,7 @@ app does not allow custom buttons inside the full-screen live view.
 
 The official go2rtc cannot move the camera, change its settings, or detect 16 kHz audio. go2rtc-xiaomi-control is
 an **unofficial** build of go2rtc 1.9.14 with a small public [patch](go2rtc-xiaomi-control/go2rtc-xiaomi-control.patch)
-(about 230 lines, described in [go2rtc-xiaomi-control/README.md](go2rtc-xiaomi-control/README.md)).
+(described in [go2rtc-xiaomi-control/README.md](go2rtc-xiaomi-control/README.md)).
 
 - It is built by GitHub Actions from the official go2rtc sources and the patch, for each release of this plugin
   ([workflow](.github/workflows/release.yml), public build logs).

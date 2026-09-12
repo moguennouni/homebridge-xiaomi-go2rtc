@@ -44,7 +44,8 @@ comme une caméra HomeKit.
 - Les caméras H.264 sont copiées telles quelles (presque aucun calcul). Les caméras H.265 sont réencodées en H.264,
   le seul codec accepté par HomeKit.
 - Son du micro de la caméra.
-- Un capteur de mouvement alimenté par la caméra elle-même, en temps réel, sans le cloud.
+- Un capteur de mouvement pour les notifications et les automatisations, alimenté par la détection de la caméra via
+  le cloud Xiaomi (la notification montre la vignette du mouvement), ou par le moteur de la caméra, en temps réel.
 - Interrupteurs d'orientation et interrupteurs de réglages (veille, voyant, suivi des mouvements, détection de
   mouvement, vision nocturne), regroupés avec la caméra.
 - Rien d'autre à installer : le plugin télécharge et vérifie la version de go2rtc dont il a besoin.
@@ -63,7 +64,8 @@ Caméra Xiaomi ──(réseau local, P2P chiffré)──► go2rtc ──(RTSP, 
 - La vidéo va de la caméra à votre serveur **sur le réseau local**, puis vers vos appareils Apple.
 - go2rtc a besoin d'Internet à chaque connexion pour obtenir les clés de chiffrement auprès du cloud Xiaomi, avec
   votre compte.
-- go2rtc ne se connecte à une caméra que pendant qu'on la regarde ou qu'une capture est demandée.
+- go2rtc ne se connecte à une caméra que pendant qu'on la regarde ou qu'une capture est demandée, et en permanence
+  avec la source de mouvement `camera`. La source `cloud` n'interroge que le cloud Xiaomi.
 - La version de go2rtc utilisée par défaut est [go2rtc-xiaomi-control](#à-propos-de-go2rtc-xiaomi-control) : le
   go2rtc officiel plus un petit correctif public, compilé par GitHub Actions pour chaque version du plugin.
 
@@ -346,7 +348,7 @@ interrupteurs dans la même pièce. L'app Maison ne permet pas d'ajouter des bou
 
 Le go2rtc officiel ne sait ni orienter la caméra, ni modifier ses réglages, ni détecter un son à 16 kHz.
 go2rtc-xiaomi-control est une version **non officielle** de go2rtc 1.9.14 avec un petit
-[correctif](go2rtc-xiaomi-control/go2rtc-xiaomi-control.patch) public (environ 230 lignes, décrit dans
+[correctif](go2rtc-xiaomi-control/go2rtc-xiaomi-control.patch) public (décrit dans
 [go2rtc-xiaomi-control/README.md](go2rtc-xiaomi-control/README.md)).
 
 - Elle est compilée par GitHub Actions à partir du code officiel de go2rtc et du correctif, pour chaque version du
