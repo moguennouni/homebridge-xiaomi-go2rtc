@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0
+
+- **Motion sensor source** (`motionSource`): `cloud`, the new default, reads the events of the camera from the
+  Xiaomi cloud (what Mi Home lists), every `motionInterval` seconds (10 by default, 5 minimum). Reliable, 20 to 30 s
+  late, and `"motionTypes": "people"` keeps people only. `camera` is the 0.6.0 behaviour: immediate, but every turn
+  of the motion tracking raises a movement.
+  **Upgrading from 0.6.0:** a camera with `"motion": true` switches to the cloud source; set
+  `"motionSource": "camera"` to keep the previous one.
+- Hide the motion sensor settings in the Homebridge UI until the sensor is enabled.
+
 ## 0.6.0
 
 - **Motion sensor** (`motion`), fed by the camera itself, in real time and without the cloud: when its motion

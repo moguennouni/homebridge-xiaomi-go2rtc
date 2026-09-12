@@ -286,20 +286,29 @@ fréquence et corrige le problème. Seulement si vous utilisez le go2rtc officie
 
 ## Capteur de mouvement
 
-`"motion": true` ajoute un capteur de mouvement HomeKit à la caméra, alimenté par la caméra elle-même, en temps
-réel et sans le cloud : quand son suivi de mouvement la fait tourner pour suivre quelqu'un, elle le signale, et le
-plugin en fait un événement de mouvement. Vous recevez alors les notifications de l'app Maison et pouvez déclencher
-des automatisations.
+`"motion": true` ajoute un capteur de mouvement HomeKit à la caméra. Vous recevez alors les notifications de l'app
+Maison et pouvez déclencher des automatisations. Le capteur reste actif `motionDuration` secondes (15 par défaut)
+après le dernier mouvement. `motionSource` choisit ce qui l'alimente :
 
-- **Le « suivi de mouvement » doit être activé sur la caméra** (interrupteur `Suivi des mouvements`, ou Mi Home) :
-  c'est en tournant pour suivre qu'elle signale un mouvement.
-- Le capteur reste actif `motionDuration` secondes (15 par défaut) après le dernier signalement.
-- Le plugin garde une connexion légère avec la caméra : pas de vidéo, pas de décodage, quelques octets de temps en
-  temps. Il réutilise la connexion vidéo pendant que vous regardez.
-- Les événements de mouvement du cloud Xiaomi (ceux que liste Mi Home, avec les types `PeopleMotion` et
-  `ObjectMotion`) ne sont **pas** utilisés : mesurés sur une MJSXJ10CM, ils arrivent avec 20 à 60 s de retard, et au
-  mieux un toutes les 3 minutes, l'intervalle d'alerte de la caméra. `GET /api/xiaomi/events` de
-  go2rtc-xiaomi-control permet de les lire si vous voulez expérimenter.
+| | `cloud` (par défaut) | `camera` |
+|---|---|---|
+| Signal | La détection de mouvement de la caméra, telle que Mi Home la liste | Le message du moteur quand le suivi de mouvement fait tourner la caméra |
+| Délai | 20 à 30 s, plus jusqu'à `motionInterval` | Immédiat |
+| Fréquence | Au plus un événement par intervalle d'alerte de la caméra (3 min minimum dans Mi Home) | À chaque rotation |
+| Nécessite | « Détection de mouvement » activée sur la caméra | « Suivi des mouvements » activé sur la caméra |
+| Personnes uniquement | Oui, avec `"motionTypes": "people"` | Non |
+
+**Cloud** (`"motionSource": "cloud"`) : le plugin lit les événements de la caméra dans le cloud Xiaomi toutes les
+`motionInterval` secondes (10 par défaut, 5 minimum), la même liste que Mi Home. C'est la source la plus fiable,
+mais pas instantanée : le cloud liste un événement 20 à 30 s après qu'il a eu lieu (mesuré sur une MJSXJ10CM), donc
+interroger toutes les 5 s au lieu de 10 fait gagner 5 s au mieux. `"motionTypes": "people"` ignore tout ce qui n'est
+pas une personne (`PeopleMotion`, visages). Les événements déjà présents au démarrage, ou vieux de plus de 2 minutes
+après une panne du cloud, ne déclenchent pas le capteur.
+
+**Caméra** (`"motionSource": "camera"`) : le plugin garde une connexion légère avec la caméra (pas de vidéo, pas de
+décodage, quelques octets de temps en temps, en réutilisant la connexion vidéo pendant que vous regardez). Chaque
+rotation du suivi déclenche un mouvement : des enfants qui jouent devant la caméra donnent une notification à
+chaque fois.
 
 ## Orientation et réglages de la caméra
 
@@ -385,7 +394,10 @@ orientation, réglages ni correction du son), et `go2rtcPath` lance un binaire g
 | `maxWidth` | `1280` | Largeur maximale en réencodage |
 | `audio` | `false` | Son de la caméra |
 | `audioSampleRate` | `0` | `16000` corrige un son grave et ralenti, avec le go2rtc **officiel** uniquement |
-| `motion` | `false` | Capteur de mouvement, nécessite le suivi de mouvement activé sur la caméra |
+| `motion` | `false` | Capteur de mouvement |
+| `motionSource` | `cloud` | `cloud` (événements du cloud Xiaomi, 20 à 30 s de retard) ou `camera` (moteur du suivi, immédiat) |
+| `motionInterval` | `10` | Source cloud : secondes entre deux interrogations, 5 minimum |
+| `motionTypes` | `all` | Source cloud : `all`, ou `people` pour ignorer tout ce qui n'est pas une personne |
 | `motionDuration` | `15` | Durée pendant laquelle le capteur reste actif, en secondes |
 | `settings` | `false` | Interrupteurs de réglages |
 | `ptz` | `false` | Interrupteurs d'orientation |

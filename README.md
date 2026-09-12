@@ -280,18 +280,28 @@ you use the official go2rtc (`useOfficialGo2rtc`), set `"audioSampleRate": 16000
 
 ## Motion sensor
 
-`"motion": true` adds a HomeKit motion sensor to the camera, fed by the camera itself, in real time and without
-the cloud: when its motion tracking turns to follow a movement, it reports it, and the plugin turns that into a
-motion event. You then get notifications in the Home app and can trigger automations.
+`"motion": true` adds a HomeKit motion sensor to the camera. You then get notifications in the Home app and can
+trigger automations. The sensor stays on for `motionDuration` seconds (15 by default) after the last movement.
+`motionSource` chooses what feeds it:
 
-- **"Motion tracking" must be enabled on the camera** (the `Motion tracking` switch, or Mi Home): it is by turning
-  to follow that the camera reports a movement.
-- The sensor stays on for `motionDuration` seconds (15 by default) after the last report.
-- The plugin keeps a light connection to the camera: no video, no decoding, a few bytes now and then. It reuses
-  the video connection while you are watching.
-- The motion events of the Xiaomi cloud (what Mi Home lists, with `PeopleMotion` / `ObjectMotion` types) are **not**
-  used: measured on a MJSXJ10CM, they arrive 20 to 60 s late, and at most one every 3 minutes, the alarm interval
-  of the camera. `GET /api/xiaomi/events` of go2rtc-xiaomi-control reads them if you want to experiment.
+| | `cloud` (default) | `camera` |
+|---|---|---|
+| Signal | The camera's own motion detection, as listed in Mi Home | The motor message the camera sends when its motion tracking turns it |
+| Delay | 20 to 30 s, plus up to `motionInterval` | Immediate |
+| Frequency | At most one event per alarm interval of the camera (3 min minimum in Mi Home) | Each time the camera turns |
+| Needs | "Motion detection" enabled on the camera | "Motion tracking" enabled on the camera |
+| People only | Yes, with `"motionTypes": "people"` | No |
+
+**Cloud** (`"motionSource": "cloud"`): the plugin reads the events of the camera from the Xiaomi cloud every
+`motionInterval` seconds (10 by default, 5 minimum), the same list Mi Home shows. It is the most reliable source,
+but not an instant one: the cloud lists an event 20 to 30 s after it happened (measured on a MJSXJ10CM), so
+checking every 5 s instead of 10 s saves 5 s at most. `"motionTypes": "people"` ignores anything but people
+(`PeopleMotion`, faces). Events found at startup, or more than 2 minutes old after a cloud outage, do not trigger
+the sensor.
+
+**Camera** (`"motionSource": "camera"`): the plugin keeps a light connection to the camera (no video, no decoding,
+a few bytes now and then, reusing the video connection while you are watching). Every turn of the tracking raises
+a movement: children playing in front of the camera give a notification each time.
 
 ## Pan/tilt and camera settings
 
@@ -375,7 +385,10 @@ settings or the audio fix), and `go2rtcPath` runs a go2rtc binary you installed 
 | `maxWidth` | `1280` | Maximum width when transcoding |
 | `audio` | `false` | Audio from the camera |
 | `audioSampleRate` | `0` | `16000` fixes slow, deep audio, with the **official** go2rtc only |
-| `motion` | `false` | Motion sensor, needs motion tracking enabled on the camera |
+| `motion` | `false` | Motion sensor |
+| `motionSource` | `cloud` | `cloud` (Xiaomi cloud events, 20 to 30 s late) or `camera` (motor of the tracking, immediate) |
+| `motionInterval` | `10` | Cloud source: seconds between two checks, 5 minimum |
+| `motionTypes` | `all` | Cloud source: `all`, or `people` to ignore anything but people |
 | `motionDuration` | `15` | How long the motion sensor stays on, in seconds |
 | `settings` | `false` | Settings switches |
 | `ptz` | `false` | Pan/tilt switches |

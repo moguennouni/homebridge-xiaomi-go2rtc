@@ -1,7 +1,7 @@
 {
   "name": "homebridge-xiaomi-go2rtc",
   "displayName": "Xiaomi Cameras (go2rtc)",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Xiaomi Mi Home cameras in Apple Home (HomeKit) through Homebridge and go2rtc: live video, snapshots, audio, optional pan/tilt and camera settings.",
   "main": "index.js",
   "license": "MIT",

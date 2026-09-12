@@ -186,7 +186,62 @@
               "title": "Motion sensor",
               "type": "boolean",
               "default": false,
-              "description": "Needs \"motion tracking\" enabled on the camera: it reports a movement when it turns to follow it."
+              "description": "Adds a HomeKit motion sensor to the camera, for notifications and automations."
+            },
+            "motionSource": {
+              "title": "Motion sensor source",
+              "type": "string",
+              "default": "cloud",
+              "oneOf": [
+                {
+                  "title": "Xiaomi cloud: the camera's own detection, 20 to 30 s late, at most one event per alarm interval",
+                  "enum": [
+                    "cloud"
+                  ]
+                },
+                {
+                  "title": "Camera motor: immediate, needs motion tracking enabled, triggers each time the camera turns",
+                  "enum": [
+                    "camera"
+                  ]
+                }
+              ],
+              "condition": {
+                "functionBody": "return model.cameras[arrayIndices].motion === true;"
+              }
+            },
+            "motionInterval": {
+              "title": "Xiaomi cloud check interval (seconds)",
+              "type": "integer",
+              "default": 10,
+              "minimum": 5,
+              "maximum": 300,
+              "description": "Below 10 s, the gain is small: the cloud itself lists events 20 to 30 s after they happen.",
+              "condition": {
+                "functionBody": "return model.cameras[arrayIndices].motion === true && model.cameras[arrayIndices].motionSource !== 'camera';"
+              }
+            },
+            "motionTypes": {
+              "title": "Xiaomi cloud events",
+              "type": "string",
+              "default": "all",
+              "oneOf": [
+                {
+                  "title": "All movements",
+                  "enum": [
+                    "all"
+                  ]
+                },
+                {
+                  "title": "People only (PeopleMotion)",
+                  "enum": [
+                    "people"
+                  ]
+                }
+              ],
+              "condition": {
+                "functionBody": "return model.cameras[arrayIndices].motion === true && model.cameras[arrayIndices].motionSource !== 'camera';"
+              }
             },
             "motionDuration": {
               "title": "Motion sensor duration (seconds)",
