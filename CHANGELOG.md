@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.1
+
+- Fix: "another user is watching" when a second device opened the camera, typically from a motion notification,
+  while only one stream was running. HomeKit reserves a stream slot as soon as a stream is prepared, and
+  HAP-NodeJS never frees one that the Home app prepares without starting it. The plugin now frees such a slot after
+  10 s.
+- The logs name the device address of each stream (`Starting the stream for 192.168.1.14`), and of each prepared
+  stream in debug mode, to tell which device prepares streams without starting them.
+- Fix: a stream stopped by the Home app while it was still starting could leave an FFmpeg transcoding for nobody.
+
 ## 0.8.0
 
 - **The notification shows the movement**: with the cloud motion source, the notification snapshot is now the
