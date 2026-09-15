@@ -26,11 +26,14 @@ index 984c73e..344a9ae 100644
  	sources := make([]string, 0, len(s.producers))
  	for _, prod := range s.producers {
 diff --git a/internal/xiaomi/xiaomi.go b/internal/xiaomi/xiaomi.go
-index 1801fa8..c2c00af 100644
+index 1801fa8..9a5e7cd 100644
 --- a/internal/xiaomi/xiaomi.go
 +++ b/internal/xiaomi/xiaomi.go
-@@ -7,8 +7,10 @@ import (
+@@ -5,10 +5,13 @@ import (
+ 	"encoding/json"
+ 	"errors"
  	"fmt"
++	"io"
  	"net/http"
  	"net/url"
 +	"strconv"
@@ -40,7 +43,7 @@ index 1801fa8..c2c00af 100644
  
  	"github.com/AlexxIT/go2rtc/internal/api"
  	"github.com/AlexxIT/go2rtc/internal/app"
-@@ -16,6 +18,8 @@ import (
+@@ -16,6 +19,8 @@ import (
  	"github.com/AlexxIT/go2rtc/pkg/core"
  	"github.com/AlexxIT/go2rtc/pkg/xiaomi"
  	"github.com/AlexxIT/go2rtc/pkg/xiaomi/crypto"
@@ -49,7 +52,7 @@ index 1801fa8..c2c00af 100644
  )
  
  func Init() {
-@@ -46,7 +50,443 @@ func Init() {
+@@ -46,7 +51,487 @@ func Init() {
  		return xiaomi.Dial(rawURL)
  	})
  
@@ -71,6 +74,7 @@ index 1801fa8..c2c00af 100644
 +	api.HandleFunc("api/xiaomi/motion", apiMotion)
 +	api.HandleFunc("api/xiaomi/events", apiEvents)
 +	api.HandleFunc("api/xiaomi/image", apiEventImage)
++	api.HandleFunc("api/xiaomi/speaker", apiSpeaker)
 +}
 +
 +type miotParam struct {
@@ -490,6 +494,49 @@ index 1801fa8..c2c00af 100644
 +	}
 +
 +	http.Error(w, "no Xiaomi camera is playing on this stream", http.StatusConflict)
++}
++
++type speaker interface {
++	Speak(r io.Reader, format string, rate uint32) error
++}
++
++// apiSpeaker plays the request body on the speaker of the Xiaomi camera of a playing stream (two-way audio): raw
++// mono audio, sent as it is produced. format=pcma (A-law, default) or pcm (16-bit little endian), rate=8000 (default)
++// or 16000: POST /api/xiaomi/speaker?src=camera1&format=pcma&rate=8000
++func apiSpeaker(w http.ResponseWriter, r *http.Request) {
++	if r.Method != "POST" {
++		http.Error(w, "", http.StatusMethodNotAllowed)
++		return
++	}
++
++	query := r.URL.Query()
++	stream := streams.Get(query.Get("src"))
++	if stream == nil {
++		http.Error(w, "stream not found", http.StatusNotFound)
++		return
++	}
++
++	var rate uint32
++	switch query.Get("rate") {
++	case "", "8000":
++		rate = 8000
++	case "16000":
++		rate = 16000
++	default:
++		http.Error(w, "rate must be 8000 or 16000", http.StatusBadRequest)
++		return
++	}
++
++	for _, conn := range stream.Conns() {
++		if s, ok := conn.(speaker); ok {
++			if err := s.Speak(r.Body, query.Get("format"), rate); err != nil {
++				http.Error(w, err.Error(), http.StatusInternalServerError)
++			}
++			return
++		}
++	}
++
++	http.Error(w, "no Xiaomi camera is playing on this stream", http.StatusConflict)
  }
  
  var tokens map[string]string
@@ -666,8 +713,98 @@ index 0dcfd24..8c61c7c 100644
  func (c *Cloud) Request(baseURL, apiURL, params string, headers map[string]string) ([]byte, error) {
  	form := url.Values{"data": {params}}
  
+diff --git a/pkg/xiaomi/miss/backchannel.go b/pkg/xiaomi/miss/backchannel.go
+index 02ea3bb..bba1548 100644
+--- a/pkg/xiaomi/miss/backchannel.go
++++ b/pkg/xiaomi/miss/backchannel.go
+@@ -1,6 +1,9 @@
+ package miss
+ 
+ import (
++	"errors"
++	"fmt"
++	"io"
+ 	"time"
+ 
+ 	"github.com/AlexxIT/go2rtc/pkg/core"
+@@ -72,3 +75,75 @@ func (p *Producer) AddTrack(media *core.Media, _ *core.Codec, track *core.Receiv
+ 	p.Senders = append(p.Senders, sender)
+ 	return nil
+ }
++
++// The cameras expect 40 ms audio packets
++const speakerPacket = 40 * time.Millisecond
++
++// Speak plays raw audio read from r on the camera speaker, until r ends. Unlike AddTrack, the audio does not need to
++// come from a go2rtc stream: e.g. the body of an HTTP request.
++// format: "pcma" (A-law, 8 bits) or "pcm" (16-bit little endian); rate: 8000 or 16000. Without a format: A-law
++// 8 kHz, converted to PCM for the models that need it (like AddTrack).
++func (p *Producer) Speak(r io.Reader, format string, rate uint32) error {
++	model := p.client.SpeakerCodec()
++	if model == codecOPUS {
++		return errors.New("miss: this camera speaker needs Opus")
++	}
++	if rate == 0 {
++		rate = 8000
++	}
++
++	codec := uint32(codecPCMA)
++	bytesPerSample := 1
++	var transcode func([]byte) []byte
++
++	switch format {
++	case "":
++		if model == codecPCM {
++			codec = codecPCM
++			transcode = pcm.Transcode(&core.Codec{Name: core.CodecPCML, ClockRate: rate}, &core.Codec{Name: core.CodecPCMA, ClockRate: rate})
++		}
++	case "pcma":
++	case "pcm":
++		codec = codecPCM
++		bytesPerSample = 2
++	default:
++		return fmt.Errorf("miss: unknown speaker format %q", format)
++	}
++
++	if err := p.client.StartSpeaker(); err != nil {
++		return err
++	}
++	defer p.client.StopSpeaker()
++	// Same delay as AddTrack: the speaker is not ready right after the command
++	time.Sleep(time.Second)
++
++	buf := make([]byte, int(rate)*bytesPerSample*int(speakerPacket/time.Millisecond)/1000)
++	var start time.Time
++
++	for n := 0; ; n++ {
++		if _, err := io.ReadFull(r, buf); err != nil {
++			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
++				return nil
++			}
++			return err
++		}
++
++		// The speaker plays packets as they come: audio received in bursts is paced at 40 ms per packet. After a
++		// pause (microphone off), the pace starts again from now instead of sending the backlog at once.
++		due := start.Add(time.Duration(n) * speakerPacket)
++		if wait := time.Until(due); n == 0 || wait < -200*time.Millisecond {
++			start = time.Now().Add(-time.Duration(n) * speakerPacket)
++		} else if wait > 0 {
++			time.Sleep(wait)
++		}
++
++		data := buf
++		if transcode != nil {
++			data = transcode(buf)
++		}
++		p.Send += len(data)
++		if err := p.client.WriteAudio(codec, data); err != nil {
++			return err
++		}
++	}
++}
 diff --git a/pkg/xiaomi/miss/client.go b/pkg/xiaomi/miss/client.go
-index 6eaa06c..aa4bee1 100644
+index 6eaa06c..6c4b347 100644
 --- a/pkg/xiaomi/miss/client.go
 +++ b/pkg/xiaomi/miss/client.go
 @@ -6,8 +6,10 @@ import (
@@ -788,8 +925,20 @@ index 6eaa06c..aa4bee1 100644
  }
  
  const (
+@@ -204,6 +298,11 @@ func (c *Client) StartSpeaker() error {
+ 	return c.WriteCommand(data)
+ }
+ 
++func (c *Client) StopSpeaker() error {
++	data := binary.BigEndian.AppendUint32(nil, cmdSpeakerStop)
++	return c.WriteCommand(data)
++}
++
+ // SpeakerCodec if the camera model has a non-standard two-way codec.
+ func (c *Client) SpeakerCodec() uint32 {
+ 	switch c.model {
 diff --git a/pkg/xiaomi/miss/cs2/conn.go b/pkg/xiaomi/miss/cs2/conn.go
-index 1bea07c..5dfad3f 100644
+index 1bea07c..6eb5d3f 100644
 --- a/pkg/xiaomi/miss/cs2/conn.go
 +++ b/pkg/xiaomi/miss/cs2/conn.go
 @@ -105,6 +105,15 @@ func handshake(host, transport string) (net.Conn, error) {
@@ -819,6 +968,15 @@ index 1bea07c..5dfad3f 100644
  			channel := c.channels[ch]
  
  			if c.isTCP {
+@@ -264,7 +277,7 @@ func (c *Conn) WritePacket(hdr, payload []byte) error {
+ 	c.seqCh3++
+ 	binary.BigEndian.PutUint32(req[8:], n)
+ 	copy(req[offset:], hdr)
+-	copy(req[offset+hdrSize:], hdr)
++	copy(req[offset+hdrSize:], payload)
+ 
+ 	_, err := c.Conn.Write(req)
+ 	return err
 diff --git a/pkg/xiaomi/miss/producer.go b/pkg/xiaomi/miss/producer.go
 index eeaa496..ceae044 100644
 --- a/pkg/xiaomi/miss/producer.go

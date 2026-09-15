@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.9.0
+
+- **Shared transcoding** (`sharedTranscode`, on by default): an H.265 camera is transcoded to H.264 once by go2rtc,
+  for every device watching, instead of once per device. Each additional viewer now only copies the video and
+  converts the audio, which saves most of the CPU and memory on small boards. The shared stream uses H.264 at
+  600 kbit/s with a key frame every 2 s; `maxWidth` and the bitrate requested by the Home app do not apply to it.
+  Set `"sharedTranscode": false` to go back to one transcoding per viewer.
+  Measured on an Orange Pi One with two devices watching: one transcoding at about 50% CPU plus 8% per viewer,
+  instead of one full transcoding per viewer, and about twice as much free memory. A second device, or a
+  notification opened while another device watches, also starts faster.
+- **HomeKit Secure Video recording** (`recording`, experimental, off by default): a permanent ffmpeg copies the
+  camera H.264 (the shared transcoding for an H.265 camera) into fragmented MP4 and keeps the last 4 seconds; the
+  home hub receives them followed by the recording when the motion sensor fires. Needs a home hub, iCloud+ and the
+  motion sensor. `recordingPrebuffer` (4 to 30 s) sets how much video before the trigger starts each clip, so that
+  the late cloud motion trigger still shows the movement; `recordingPrebufferAnnounced` lowers the value announced
+  to the home hub if it refuses a long prebuffer, the plugin sending the seconds kept anyway.
+- **Recovery after a lost camera connection**: when go2rtc reports that it lost a camera, the plugin restarts
+  go2rtc (at most every 5 minutes). go2rtc reconnects a camera on its own, but the shared transcoding then starts over
+  under the running readers: the recording prebuffer kept the previous initialization segment (the home hub
+  cancelled every clip) and the live view stopped after a few seconds, until Homebridge was restarted.
+- go2rtc-xiaomi-control: audio sent to the camera was empty. go2rtc 1.9.14 copied the packet header a second time
+  instead of the audio (`cs2` `WritePacket`), so the speaker only crackled.
+- **Two-way audio** (`twoWayAudio`, experimental, off by default): the microphone button of the Home app live view
+  plays the voice on the camera speaker. The tested camera sometimes closes its connection a few seconds after
+  receiving audio (then recovered by the go2rtc restart above). The plugin decodes the device microphone (AAC-ELD) into A-law 8 kHz and sends it to
+  go2rtc-xiaomi-control, which gains `POST /api/xiaomi/speaker` (the audio body goes to the speaker of the playing
+  stream, 40 ms packets).
+- Fix: no stream at all away from home (cellular through a home hub) when audio was on. The hub asks for 60 ms audio
+  packets, which set AAC-ELD frames to 960 samples, a length the encoder refuses: frames are now always 480 samples.
+
+- Fix: the pan/tilt switches moved the camera the opposite way (up went down, left went right). Default commands
+  are now `{"operation":1}` left, `2` right, `3` up, `4` down. A `ptzLeft`/`ptzRight`/`ptzUp`/`ptzDown` set by hand
+  to work around it must be removed.
+
 ## 0.8.1
 
 - Fix: "another user is watching" when a second device opened the camera, typically from a motion notification,

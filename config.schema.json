@@ -250,6 +250,45 @@
               "minimum": 5,
               "maximum": 300
             },
+            "sharedTranscode": {
+              "title": "Shared transcoding",
+              "type": "boolean",
+              "default": true,
+              "description": "H.265 cameras: go2rtc transcodes once for every device watching, instead of once per device. Much less CPU and memory with several viewers."
+            },
+            "recording": {
+              "title": "HomeKit Secure Video recording (experimental)",
+              "type": "boolean",
+              "default": false,
+              "description": "Needs a home hub, an iCloud+ plan and the motion sensor. While recording is allowed in the Home app, the camera is transcoded permanently to keep the seconds before each event."
+            },
+            "recordingPrebuffer": {
+              "title": "Recording: seconds kept before the trigger",
+              "type": "integer",
+              "default": 4,
+              "minimum": 4,
+              "maximum": 30,
+              "description": "The cloud motion sensor fires 10 to 30 s after the movement: a longer prebuffer lets the clip show it. About 75 KB of memory per second.",
+              "condition": {
+                "functionBody": "return model.cameras[arrayIndices].recording === true;"
+              }
+            },
+            "recordingPrebufferAnnounced": {
+              "title": "Recording: prebuffer announced to the home hub (seconds, advanced)",
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 30,
+              "description": "Defaults to the value above. Lower it (e.g. 8) if the home hub refuses a long prebuffer: the plugin still sends the seconds kept.",
+              "condition": {
+                "functionBody": "return model.cameras[arrayIndices].recording === true;"
+              }
+            },
+            "twoWayAudio": {
+              "title": "Two-way audio (experimental)",
+              "type": "boolean",
+              "default": false,
+              "description": "Adds the microphone button in the Home app live view, the voice playing on the camera speaker. Needs Audio and go2rtc-xiaomi-control. Experimental: the camera may close its connection while receiving audio; the plugin then restarts go2rtc."
+            },
             "videoMode": {
               "title": "Video",
               "type": "string",
@@ -340,22 +379,22 @@
             "ptzLeft": {
               "title": "\"Left\" command (advanced)",
               "type": "string",
-              "placeholder": "{\"operation\":2}"
+              "placeholder": "{\"operation\":1}"
             },
             "ptzRight": {
               "title": "\"Right\" command (advanced)",
               "type": "string",
-              "placeholder": "{\"operation\":1}"
+              "placeholder": "{\"operation\":2}"
             },
             "ptzUp": {
               "title": "\"Up\" command (advanced)",
               "type": "string",
-              "placeholder": "{\"operation\":4}"
+              "placeholder": "{\"operation\":3}"
             },
             "ptzDown": {
               "title": "\"Down\" command (advanced)",
               "type": "string",
-              "placeholder": "{\"operation\":3}"
+              "placeholder": "{\"operation\":4}"
             }
           }
         }

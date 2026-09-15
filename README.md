@@ -320,8 +320,8 @@ a movement: children playing in front of the camera give a notification each tim
 
 The directions were checked on `chuangmi.camera.026c02`, where one horizontal step is small (about 3 units) and one
 vertical step larger (about 9). Increase `ptzPanSteps` / `ptzTiltSteps` to move more per press. On another model,
-if a direction is wrong, change `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (defaults: `{"operation":2}`,
-`{"operation":1}`, `{"operation":4}`, `{"operation":3}`). To test a command by hand while the live view is open:
+if a direction is wrong, change `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (defaults: `{"operation":1}`,
+`{"operation":2}`, `{"operation":3}`, `{"operation":4}`). To test a command by hand while the live view is open:
 
 ```bash
 curl -s -X POST -G http://127.0.0.1:1984/api/xiaomi/command --data-urlencode src=xiaomi_123456789 --data-urlencode cmd=0x112 --data-urlencode 'data={"operation":1}'
@@ -385,7 +385,12 @@ settings or the audio fix), and `go2rtcPath` runs a go2rtc binary you installed 
 | `subtype` | camera default | Quality requested from the camera: `hd`, `sd` |
 | `videoMode` | `auto` | `auto` (copy H.264, transcode otherwise), `copy`, `transcode` |
 | `encoder` | `libx264` | H.264 encoder when transcoding, e.g. `h264_v4l2m2m` (hardware, board dependent) |
-| `maxWidth` | `1280` | Maximum width when transcoding |
+| `maxWidth` | `1280` | Maximum width when transcoding (not applied with `sharedTranscode`) |
+| `twoWayAudio` | `false` | Experimental, with `audio`: microphone button in the live view, the voice plays on the camera speaker (go2rtc-xiaomi-control). The camera may close its connection while receiving audio |
+| `recording` | `false` | Experimental: HomeKit Secure Video recording. Needs a home hub, iCloud+ and `motion`; H.265 cameras also need `sharedTranscode`. The camera is transcoded permanently while recording is allowed in the Home app |
+| `recordingPrebuffer` | `4` | Recording: seconds kept and sent before the trigger (4 to 30). The cloud motion sensor fires 10 to 30 s late: a longer prebuffer lets the clip show the movement |
+| `recordingPrebufferAnnounced` | `recordingPrebuffer` | Advanced: prebuffer announced to the home hub, if it refuses a long one; the plugin still sends `recordingPrebuffer` |
+| `sharedTranscode` | `true` | H.265 cameras: go2rtc transcodes once (H.264, 600 kbit/s, a key frame every 2 s) for every device watching, instead of once per device |
 | `audio` | `false` | Audio from the camera |
 | `audioSampleRate` | `0` | `16000` fixes slow, deep audio, with the **official** go2rtc only |
 | `motion` | `false` | Motion sensor |

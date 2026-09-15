@@ -329,7 +329,7 @@ chaque fois.
 Les directions ont été vérifiées sur la `chuangmi.camera.026c02`, où un pas horizontal est petit (environ 3 unités)
 et un pas vertical plus grand (environ 9). Augmentez `ptzPanSteps` / `ptzTiltSteps` pour bouger davantage à chaque
 appui. Sur un autre modèle, si une direction est fausse, modifiez `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (par
-défaut : `{"operation":2}`, `{"operation":1}`, `{"operation":4}`, `{"operation":3}`). Pour tester une commande à la
+défaut : `{"operation":1}`, `{"operation":2}`, `{"operation":3}`, `{"operation":4}`). Pour tester une commande à la
 main, vidéo ouverte :
 
 ```bash
@@ -395,7 +395,12 @@ orientation, réglages ni correction du son), et `go2rtcPath` lance un binaire g
 | `subtype` | défaut de la caméra | Qualité demandée à la caméra : `hd`, `sd` |
 | `videoMode` | `auto` | `auto` (copie si H.264, sinon réencodage), `copy`, `transcode` |
 | `encoder` | `libx264` | Encodeur H.264 en réencodage, par exemple `h264_v4l2m2m` (matériel, selon la carte) |
-| `maxWidth` | `1280` | Largeur maximale en réencodage |
+| `maxWidth` | `1280` | Largeur maximale en réencodage (ignorée avec `sharedTranscode`) |
+| `twoWayAudio` | `false` | Expérimental, avec `audio` : bouton micro dans la vidéo en direct, la voix passe sur le haut-parleur de la caméra (go2rtc-xiaomi-control). La caméra peut fermer sa connexion pendant qu'elle reçoit du son |
+| `recording` | `false` | Expérimental : enregistrement HomeKit Secure Video. Nécessite un concentrateur, iCloud+ et `motion` ; les caméras H.265 nécessitent aussi `sharedTranscode`. La caméra est réencodée en permanence tant que l'enregistrement est autorisé dans l'app Maison |
+| `recordingPrebuffer` | `4` | Enregistrement : secondes gardées et envoyées avant le déclenchement (4 à 30). Le capteur de mouvement du cloud se déclenche 10 à 30 s en retard : une mémoire tampon plus longue permet au clip de montrer le mouvement |
+| `recordingPrebufferAnnounced` | `recordingPrebuffer` | Avancé : mémoire tampon annoncée au concentrateur, s'il en refuse une longue ; le plugin envoie quand même `recordingPrebuffer` |
+| `sharedTranscode` | `true` | Caméras H.265 : go2rtc réencode une seule fois (H.264, 600 kbit/s, une image clé toutes les 2 s) pour tous les appareils qui regardent, au lieu d'une fois par appareil |
 | `audio` | `false` | Son de la caméra |
 | `audioSampleRate` | `0` | `16000` corrige un son grave et ralenti, avec le go2rtc **officiel** uniquement |
 | `motion` | `false` | Capteur de mouvement |
