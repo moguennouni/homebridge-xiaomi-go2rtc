@@ -317,6 +317,7 @@
             "subtype": {
               "title": "Quality requested from the camera",
               "type": "string",
+              "description": "Leave on Default unless the video does not start or looks wrong. \"3 - Other\" is an alternative profile some models need (the AW200 is set to it automatically).",
               "oneOf": [
                 {
                   "title": "Default",
@@ -325,15 +326,21 @@
                   ]
                 },
                 {
-                  "title": "HD",
+                  "title": "1 - SD (lighter)",
+                  "enum": [
+                    "sd"
+                  ]
+                },
+                {
+                  "title": "2 - HD",
                   "enum": [
                     "hd"
                   ]
                 },
                 {
-                  "title": "SD (lighter)",
+                  "title": "3 - Other",
                   "enum": [
-                    "sd"
+                    "3"
                   ]
                 }
               ]
@@ -360,6 +367,12 @@
               "type": "boolean",
               "default": false,
               "description": "They work while the live view is open."
+            },
+            "ptzInvert": {
+              "title": "Reverse the directions (camera mounted upside down, e.g. on the ceiling)",
+              "type": "boolean",
+              "default": false,
+              "description": "Turn it on if Up moves the camera down and Left moves it right."
             },
             "ptzPanSteps": {
               "title": "Steps per press, left / right",

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.1
+
+- **Reversed directions** (`ptzInvert`, off by default): for a camera mounted upside down, on the ceiling for
+  example, the pan/tilt switches reverse all four directions. Commands set by hand (`ptzLeft`...) still win.
+- **Xiaomi Outdoor Camera AW200** (`isa.camera.hlc9a`): it never sent video (`cs2: i/o timeout`) because go2rtc asks
+  it for quality 2, which it ignores. The plugin now requests quality 3 for this model by default, so no manual
+  setting is needed. The camera quality menu is now numbered (1 - SD, 2 - HD, 3 - Other), "3 - Other" being an
+  alternative profile some models need. Thanks to @isax5 for the report and the test (#1).
+
 ## 0.9.0
 
 - **Shared transcoding** (`sharedTranscode`, on by default): an H.265 camera is transcoded to H.264 once by go2rtc,

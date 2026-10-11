@@ -319,7 +319,8 @@ a movement: children playing in front of the camera give a notification each tim
 ### Directions and step size
 
 The directions were checked on `chuangmi.camera.026c02`, where one horizontal step is small (about 3 units) and one
-vertical step larger (about 9). Increase `ptzPanSteps` / `ptzTiltSteps` to move more per press. On another model,
+vertical step larger (about 9). Increase `ptzPanSteps` / `ptzTiltSteps` to move more per press. Camera mounted upside down
+(on the ceiling, for example): turn on `ptzInvert` to reverse all four directions. On another model,
 if a direction is wrong, change `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (defaults: `{"operation":1}`,
 `{"operation":2}`, `{"operation":3}`, `{"operation":4}`). To test a command by hand while the live view is open:
 
@@ -401,6 +402,7 @@ settings or the audio fix), and `go2rtcPath` runs a go2rtc binary you installed 
 | `settings` | `false` | Settings switches |
 | `ptz` | `false` | Pan/tilt switches |
 | `ptzPanSteps`, `ptzTiltSteps` | `1` | Motor steps per press, horizontal and vertical |
+| `ptzInvert` | `false` | Reverses the four directions, for a camera mounted upside down (ceiling) |
 | `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` | see above | Advanced: payload of the pan/tilt command |
 
 A complete example is in [config.example.json](config.example.json).

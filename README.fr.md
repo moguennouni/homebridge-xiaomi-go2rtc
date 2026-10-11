@@ -328,7 +328,8 @@ chaque fois.
 
 Les directions ont été vérifiées sur la `chuangmi.camera.026c02`, où un pas horizontal est petit (environ 3 unités)
 et un pas vertical plus grand (environ 9). Augmentez `ptzPanSteps` / `ptzTiltSteps` pour bouger davantage à chaque
-appui. Sur un autre modèle, si une direction est fausse, modifiez `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (par
+appui. Caméra fixée à l'envers (au plafond, par exemple) : activez `ptzInvert` pour inverser les quatre directions.
+Sur un autre modèle, si une direction est fausse, modifiez `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` (par
 défaut : `{"operation":1}`, `{"operation":2}`, `{"operation":3}`, `{"operation":4}`). Pour tester une commande à la
 main, vidéo ouverte :
 
@@ -411,6 +412,7 @@ orientation, réglages ni correction du son), et `go2rtcPath` lance un binaire g
 | `settings` | `false` | Interrupteurs de réglages |
 | `ptz` | `false` | Interrupteurs d'orientation |
 | `ptzPanSteps`, `ptzTiltSteps` | `1` | Pas du moteur par appui, horizontal et vertical |
+| `ptzInvert` | `false` | Inverse les quatre directions, pour une caméra fixée à l'envers (plafond) |
 | `ptzLeft`, `ptzRight`, `ptzUp`, `ptzDown` | voir plus haut | Avancé : contenu de la commande d'orientation |
 
 Un exemple complet se trouve dans [config.example.json](config.example.json).
