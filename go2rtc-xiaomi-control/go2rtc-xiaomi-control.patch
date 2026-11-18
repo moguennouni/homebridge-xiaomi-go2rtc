@@ -938,9 +938,27 @@ index 6eaa06c..6c4b347 100644
  func (c *Client) SpeakerCodec() uint32 {
  	switch c.model {
 diff --git a/pkg/xiaomi/miss/cs2/conn.go b/pkg/xiaomi/miss/cs2/conn.go
-index 1bea07c..6eb5d3f 100644
+index 1bea07c..c3a656b 100644
 --- a/pkg/xiaomi/miss/cs2/conn.go
 +++ b/pkg/xiaomi/miss/cs2/conn.go
+@@ -74,7 +74,7 @@ func handshake(host, transport string) (net.Conn, error) {
+ 	})
+ 	if err != nil {
+ 		_ = conn.Close()
+-		return nil, err
++		return nil, fmt.Errorf("cs2: handshake: lan search: %w", err)
+ 	}
+ 
+ 	var msgUDP, msgTCP byte
+@@ -91,7 +91,7 @@ func handshake(host, transport string) (net.Conn, error) {
+ 	})
+ 	if err != nil {
+ 		_ = conn.Close()
+-		return nil, err
++		return nil, fmt.Errorf("cs2: handshake: p2p ready: %w", err)
+ 	}
+ 
+ 	_ = conn.SetDeadline(time.Time{})
 @@ -105,6 +105,15 @@ func handshake(host, transport string) (net.Conn, error) {
  	return conn, nil
  }
@@ -977,6 +995,23 @@ index 1bea07c..6eb5d3f 100644
  
  	_, err := c.Conn.Write(req)
  	return err
+@@ -351,11 +364,15 @@ func (c *udpConn) WriteUntil(req []byte, ok func(res []byte) bool) ([]byte, erro
+ 
+ 	buf := make([]byte, 1200)
+ 
++	var received int
++
+ 	for {
+ 		n, addr, err := c.UDPConn.ReadFromUDP(buf)
+ 		if err != nil {
+-			return nil, err
++			// Nothing received at all usually means the replies are dropped before go2rtc (e.g. a firewall)
++			return nil, fmt.Errorf("no reply from %s (%d packets received): %w", c.addr, received, err)
+ 		}
++		received++
+ 
+ 		if string(addr.IP) != string(c.addr.IP) || n < 16 {
+ 			continue // skip messages from another IP
 diff --git a/pkg/xiaomi/miss/producer.go b/pkg/xiaomi/miss/producer.go
 index eeaa496..ceae044 100644
 --- a/pkg/xiaomi/miss/producer.go

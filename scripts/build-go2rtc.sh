@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Builds go2rtc-xiaomi-control: the official go2rtc sources + go2rtc-xiaomi-control.patch, nothing else.
-# Requires git, Go (https://go.dev/dl/) and Node.js. Writes to go2rtc-xiaomi-control/dist/:
+# Requires git, Go (https://go.dev/dl/), Node.js and rcodesign (https://github.com/indygreg/apple-platform-rs, to sign
+# the macOS binaries; set RCODESIGN to its path if it is not in PATH). Writes to go2rtc-xiaomi-control/dist/:
 # - the binaries for every platform supported by the plugin,
 # - SHA256SUMS,
 # - go2rtc-binaries.json (file names and digests, copied into lib/ when the npm package is released),
@@ -14,6 +15,12 @@ OUT="$ROOT/go2rtc-xiaomi-control/dist"
 RELEASE="v$(cd "$ROOT" && node -p "require('./package.json').version")"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+
+RCODESIGN="${RCODESIGN:-rcodesign}"
+if ! command -v "$RCODESIGN" > /dev/null; then
+  echo "rcodesign not found: it signs the macOS binaries, needed for the macOS firewall to apply its rules" >&2
+  exit 1
+fi
 
 echo "Downloading go2rtc v$GO2RTC_VERSION (official sources)..."
 git -c core.autocrlf=false -c advice.detachedHead=false clone --quiet --depth 1 --branch "v$GO2RTC_VERSION" https://github.com/AlexxIT/go2rtc.git "$WORK/go2rtc"
@@ -46,6 +53,11 @@ for target in $TARGETS; do
   echo "Building $name..."
   CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" GOARM="$arm" go build -ldflags "-s -w -buildid=" -trimpath -o "$OUT/$name" .
   echo "$key $name" >> "$OUT/targets.txt"
+  # Ad-hoc signature (no Apple account): the macOS firewall matches its "Allow" rules on the code signature and
+  # drops the camera replies for an unsigned binary. Done before the digests, which cover the signed file.
+  if [ "$os" = "darwin" ]; then
+    "$RCODESIGN" sign --binary-identifier go2rtc-xiaomi-control "$OUT/$name" > /dev/null
+  fi
 done
 
 cp LICENSE "$OUT/LICENSE.go2rtc"

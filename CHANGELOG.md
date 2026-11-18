@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.9.1
+## 0.9.2-beta.1
+
+Beta, to install on purpose: Homebridge UI → the plugin → **Install Alternate Version**.
+
+- **macOS: signed go2rtc binaries.** The macOS firewall dropped the camera replies (`cs2: i/o timeout` during the
+  handshake), even with go2rtc listed as allowed: it matches its rules on the code signature, and the binaries were
+  not signed. They now carry an ad-hoc signature. After installing, allow the new binary once in the firewall
+  (see #4).
+- **Clearer handshake errors**: a CS2 connection failure now says at which step it stopped and how many packets
+  reached go2rtc, e.g. `cs2: handshake: lan search: no reply from <ip>:32108 (0 packets received)`. Zero packets
+  while the camera answers means something drops the replies before go2rtc, like a firewall.
 
 - **Reversed directions** (`ptzInvert`, off by default): for a camera mounted upside down, on the ceiling for
   example, the pan/tilt switches reverse all four directions. Commands set by hand (`ptzLeft`...) still win.

@@ -1,4 +1,4 @@
-# Runs when a version tag (v1.2.3) is pushed:
+# Runs when a version tag (v1.2.3, or v1.2.3-beta.1 for a pre-release on the npm "beta" tag) is pushed:
 # 1. builds go2rtc-xiaomi-control from the official go2rtc sources + the patch, for every platform,
 # 2. records the provenance of the binaries (GitHub build attestation),
 # 3. writes their SHA-256 digests into the plugin (lib/go2rtc-binaries.json),
@@ -39,6 +39,17 @@ jobs:
             exit 1
           fi
 
+      # Signs the macOS binaries (ad hoc). Pinned version, checked against its published SHA-256.
+      - name: Install rcodesign
+        run: |
+          VERSION=0.29.0
+          FILE="apple-codesign-$VERSION-x86_64-unknown-linux-musl"
+          curl -sSfL -o "$RUNNER_TEMP/rcodesign.tar.gz" \
+            "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/$VERSION/$FILE.tar.gz"
+          echo "dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002  $RUNNER_TEMP/rcodesign.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/rcodesign.tar.gz" -C "$RUNNER_TEMP"
+          echo "RCODESIGN=$RUNNER_TEMP/$FILE/rcodesign" >> "$GITHUB_ENV"
+
       - name: Build go2rtc-xiaomi-control
         run: bash scripts/build-go2rtc.sh
 
@@ -77,7 +88,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
+          # A version like 1.2.3-beta.1 is a pre-release
+          PRERELEASE=""
+          case "$GITHUB_REF_NAME" in *-*) PRERELEASE="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" $PRERELEASE --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
             go2rtc-xiaomi-control/dist/go2rtc-xiaomi-control_* \
             go2rtc-xiaomi-control/dist/SHA256SUMS \
             go2rtc-xiaomi-control/dist/LICENSE.go2rtc \
@@ -91,4 +105,9 @@ jobs:
         if: vars.NPM_PUBLISH == 'true' && !github.event.repository.private
         run: |
           npm install -g npm@latest
-          npm publish --access public
+          # A pre-release goes to the "beta" tag: users on "latest" don't get it, it is installed on purpose
+          # (Homebridge UI → the plugin → Install Alternate Version)
+          case "$GITHUB_REF_NAME" in
+            *-*) npm publish --access public --tag beta ;;
+            *) npm publish --access public ;;
+          esac

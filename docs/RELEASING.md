@@ -30,6 +30,19 @@ installations de cette version ne pourraient plus démarrer.
 
 3. Suivre l'exécution dans l'onglet **Actions** du dépôt.
 
+## Publier une bêta
+
+Une version comme `X.Y.Z-beta.1` (avec un tiret) suit les mêmes étapes, mais la release GitHub est marquée
+« pré-release » et le paquet est publié sur npm avec l'étiquette `beta`. Les utilisateurs restent sur `latest` et ne
+la reçoivent pas : elle s'installe volontairement depuis Homebridge (le plugin → **Install Alternate Version**).
+
+## Binaires macOS signés
+
+Les binaires macOS reçoivent une signature ad hoc (sans compte Apple), faite par `rcodesign` dans le script de
+compilation : le pare-feu de macOS applique ses règles d'après la signature et bloque les réponses des caméras pour
+un binaire non signé. Les empreintes SHA-256 portent sur le fichier signé. Pour compiler en local, installer
+[rcodesign](https://github.com/indygreg/apple-platform-rs) (ou indiquer son chemin dans `RCODESIGN`).
+
 ## Première publication sur npm (une seule fois)
 
 npm ne permet de configurer la publication automatique que pour un paquet qui existe déjà. La première version se
