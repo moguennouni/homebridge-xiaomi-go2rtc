@@ -317,7 +317,7 @@
             "subtype": {
               "title": "Quality requested from the camera",
               "type": "string",
-              "description": "Leave on Default unless the video does not start or looks wrong. \"3 - Other\" is an alternative profile some models need (the AW200 is set to it automatically).",
+              "description": "Leave on Default unless the video does not start or looks wrong. \"3 - Other\" is an alternative profile some models need (the AW200 and C300 are set to it automatically).",
               "oneOf": [
                 {
                   "title": "Default",

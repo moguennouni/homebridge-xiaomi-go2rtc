@@ -1,16 +1,19 @@
 # Changelog
 
-## 0.9.2-beta.1
-
-Beta, to install on purpose: Homebridge UI → the plugin → **Install Alternate Version**.
+## 0.9.2
 
 - **macOS: signed go2rtc binaries.** The macOS firewall dropped the camera replies (`cs2: i/o timeout` during the
   handshake), even with go2rtc listed as allowed: it matches its rules on the code signature, and the binaries were
-  not signed. They now carry an ad-hoc signature. After installing, allow the new binary once in the firewall
-  (see #4).
+  not signed. They now carry an ad-hoc signature. With the firewall on, allow the new binary once after each update
+  (`~/.homebridge/xiaomi-go2rtc/go2rtc-xiaomi-control-v<version>`, see #4). Thanks to @kuo720513-del for the report
+  and the test on an Intel Mac mini (#4).
+- **Xiaomi Smart Camera C300** (`xiaomi.camera.c01a01`): same case as the AW200, no video at quality 2
+  (`read media: cs2: i/o timeout`). The plugin now requests quality 3 for this model by default (#3).
 - **Clearer handshake errors**: a CS2 connection failure now says at which step it stopped and how many packets
   reached go2rtc, e.g. `cs2: handshake: lan search: no reply from <ip>:32108 (0 packets received)`. Zero packets
   while the camera answers means something drops the replies before go2rtc, like a firewall.
+
+## 0.9.1
 
 - **Reversed directions** (`ptzInvert`, off by default): for a camera mounted upside down, on the ceiling for
   example, the pan/tilt switches reverse all four directions. Commands set by hand (`ptzLeft`...) still win.
